@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Lost in the Overworld - 404</title>
+<meta name="description" content="This region of the map doesn't exist. Head back to The Overworld to explore Faizan Ahmed's portfolio.">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#1a1130">
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-Y9SX6CSDSR"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-Y9SX6CSDSR', { page_path: '/404', page_title: '404 Not Found' });
+</script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Spectral:ital,wght@0,400;0,500;1,400&family=Share+Tech+Mono&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{
+    height:100%;
+    background:radial-gradient(ellipse at 50% 15%, #3c1f52 0%, #1a1130 45%, #0a0715 100%);
+    color:#f4ead1;
+    font-family:'Spectral',serif;
+    display:flex;align-items:center;justify-content:center;
+    overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  .stars{position:fixed;inset:0;pointer-events:none;}
+  .star{position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;opacity:.5;}
+  .wrap{
+    position:relative;text-align:center;padding:40px 24px;max-width:520px;
+  }
+  .compass{
+    width:64px;height:64px;margin:0 auto 28px;opacity:.85;
+    animation:spin 12s linear infinite;
+  }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+  h1{
+    font-family:'Cinzel',serif; font-weight:900; letter-spacing:.06em;
+    font-size:clamp(48px,10vw,88px); color:#e0b45c;
+    text-shadow:0 4px 24px rgba(224,180,92,.35);
+    line-height:1;
+  }
+  h2{
+    font-family:'Cinzel',serif; font-weight:600; letter-spacing:.12em;
+    font-size:clamp(15px,3vw,20px); color:#f4ead1; margin-top:14px;
+    text-transform:uppercase;
+  }
+  p{
+    font-size:15.5px; line-height:1.7; color:#c9bd9e; margin:18px auto 34px;
+    max-width:400px;
+  }
+  a.home-btn{
+    display:inline-flex; align-items:center; gap:10px;
+    font-family:'Cinzel',serif; letter-spacing:.12em; font-size:13px;
+    text-transform:uppercase; text-decoration:none;
+    color:#1c1420; background:#e0b45c; border-radius:3px;
+    padding:14px 30px;
+    transition:background .2s ease, transform .15s ease;
+  }
+  a.home-btn:hover{ background:#f5d78a; }
+  a.home-btn:active{ transform:scale(.97); }
+  .path-note{
+    margin-top:26px; font-family:'Share Tech Mono',monospace; font-size:11px;
+    letter-spacing:.05em; color:#7a7190;
+  }
+</style>
+</head>
+<body>
+  <div class="stars" id="stars"></div>
+  <div class="wrap">
+    <svg class="compass" viewBox="0 0 50 50">
+      <circle cx="25" cy="25" r="22" fill="none" stroke="#f4ead1" stroke-opacity=".4" stroke-width="1.5"/>
+      <polygon points="25,6 29,25 25,44 21,25" fill="#e0b45c" opacity=".9"/>
+      <text x="25" y="11" text-anchor="middle" font-size="7" fill="#f4ead1" font-family="monospace" opacity=".8">N</text>
+    </svg>
+    <h1>404</h1>
+    <h2>This region isn't on the map</h2>
+    <p>You've wandered past the edge of The Overworld. This landmark doesn't exist - or it hasn't been charted yet.</p>
+    <a class="home-btn" href="/">Return to The Overworld</a>
+    <div class="path-note">the path you tried leads nowhere</div>
+  </div>
+  <script>
+    const s = document.getElementById('stars');
+    for(let i=0;i<70;i++){
+      const d = document.createElement('div');
+      d.className='star';
+      d.style.left = (Math.random()*100)+'%';
+      d.style.top = (Math.random()*100)+'%';
+      d.style.opacity = (0.2+Math.random()*0.6).toFixed(2);
+      s.appendChild(d);
+    }
+  </script>
+</body>
+</html>

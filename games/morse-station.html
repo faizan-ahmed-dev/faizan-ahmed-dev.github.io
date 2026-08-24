@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Morse Station - AN/PRC-77 Field Transceiver | Faizan Ahmed</title>
+<meta name="description" content="An interactive Morse code transceiver built with vanilla JS and the Web Audio API - part of Faizan Ahmed's portfolio, The Overworld.">
+<link rel="canonical" href="https://faizanahmed.me/games/morse-station.html">
+<link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-Y9SX6CSDSR"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-Y9SX6CSDSR');
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Stencil+Text:wght@600;800&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root{
+    --bg-deep:#12150e;
+    --bg-panel:#1c2116;
+    --bg-panel-raised:#242a1c;
+    --bg-inset:#0d0f0a;
+    --steel:#5c664c;
+    --steel-dim:#3a4133;
+    --brass:#b9893f;
+    --brass-dim:#7a5c2c;
+    --phosphor:#ffb400;
+    --phosphor-dim:#7a5900;
+    --phosphor-glow:#ffcf5c;
+    --green:#6fd66a;
+    --alert:#c1442c;
+    --alert-glow:#ff6a47;
+    --paper:#d9d3bd;
+    --paper-dim:#9a9480;
+    --font-display:'Big Shoulders Stencil Text', sans-serif;
+    --font-ui:'Rajdhani', sans-serif;
+    --font-mono:'Share Tech Mono', monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse at 20% -10%, #232a19 0%, transparent 55%),
+      radial-gradient(ellipse at 100% 110%, #1a2013 0%, transparent 55%),
+      var(--bg-deep);
+    color:var(--paper);
+    font-family:var(--font-ui);
+    min-height:100vh;
+    padding:18px;
+    background-attachment:fixed;
+  }
+  body::before{
+    content:"";
+    position:fixed; inset:0;
+    background-image:repeating-linear-gradient(0deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 3px);
+    pointer-events:none;
+    z-index:999;
+    mix-blend-mode:overlay;
+  }
+
+  .frame{ max-width:1180px; margin:0 auto; position:relative; }
+
+  /* ---------- Screen flash overlay ---------- */
+  #screenFlash{
+    position:fixed; inset:0; pointer-events:none; z-index:998;
+    background:radial-gradient(ellipse at center, rgba(255,180,0,0.16) 0%, rgba(255,180,0,0.03) 60%, transparent 100%);
+    opacity:0;
+    transition:opacity 40ms linear;
+  }
+  #screenFlash.on{ opacity:1; }
+
+  /* ---------- Header ---------- */
+  .header{
+    display:flex; align-items:center; justify-content:space-between;
+    border:2px solid var(--steel);
+    border-radius:6px;
+    background:linear-gradient(180deg, var(--bg-panel-raised), var(--bg-panel));
+    padding:14px 22px;
+    margin-bottom:16px;
+    position:relative;
+    box-shadow: inset 0 0 30px rgba(0,0,0,0.5), 0 4px 12px rgba(0,0,0,0.4);
+  }
+  .rivet{position:absolute; width:7px; height:7px; border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #d8b06a, var(--brass-dim));
+    box-shadow:0 1px 2px rgba(0,0,0,0.6);}
+  .rivet.tl{top:6px; left:6px;} .rivet.tr{top:6px; right:6px;}
+  .rivet.bl{bottom:6px; left:6px;} .rivet.br{bottom:6px; right:6px;}
+
+  .header h1{
+    font-family:var(--font-display);
+    font-weight:800;
+    font-size:clamp(24px, 4vw, 38px);
+    letter-spacing:2px;
+    margin:0;
+    color:var(--phosphor);
+    text-shadow:0 0 12px rgba(255,180,0,0.35);
+  }
+  .header .sub{
+    font-family:var(--font-mono);
+    font-size:12px;
+    letter-spacing:2px;
+    color:var(--paper-dim);
+    margin-top:2px;
+  }
+  .lamps{ display:flex; gap:16px; align-items:center; }
+  .lamp{ display:flex; flex-direction:column; align-items:center; gap:5px; }
+  .lamp .bulb{
+    width:13px; height:13px; border-radius:50%;
+    background:#3a1c14;
+    box-shadow:inset 0 0 3px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,0.5);
+    border:1px solid #1a1a1a;
+    transition:all 80ms ease;
+  }
+  .lamp .bulb.lit-green{ background:radial-gradient(circle at 35% 30%, #baffb0, var(--green)); box-shadow:0 0 8px 2px rgba(111,214,106,0.8);}
+  .lamp .bulb.lit-red{ background:radial-gradient(circle at 35% 30%, #ffb0a0, var(--alert)); box-shadow:0 0 10px 3px rgba(193,68,44,0.9);}
+  .lamp label{ font-family:var(--font-mono); font-size:9px; letter-spacing:1.5px; color:var(--paper-dim); }
+
+  /* ---------- Layout ---------- */
+  .layout{ display:grid; grid-template-columns:1fr 360px; gap:16px; align-items:start; }
+  @media (max-width:900px){ .layout{ grid-template-columns:1fr; } }
+
+  .panel{
+    border:2px solid var(--steel);
+    border-radius:6px;
+    background:linear-gradient(180deg, var(--bg-panel-raised) 0%, var(--bg-panel) 100%);
+    padding:16px 18px 18px;
+    position:relative;
+    margin-bottom:16px;
+    box-shadow: inset 0 0 24px rgba(0,0,0,0.45), 0 3px 10px rgba(0,0,0,0.35);
+  }
+  .panel-label{
+    font-family:var(--font-display);
+    font-weight:800;
+    letter-spacing:1.5px;
+    color:var(--brass);
+    font-size:18px;
+    margin:0 0 4px 0;
+    display:flex; align-items:center; gap:8px;
+  }
+  .panel-label .tag{
+    font-family:var(--font-mono); font-size:10px; letter-spacing:2px;
+    color:var(--paper-dim); border:1px solid var(--steel-dim); border-radius:3px;
+    padding:2px 6px; background:var(--bg-inset);
+  }
+  .panel-desc{ font-size:12.5px; color:var(--paper-dim); margin:0 0 14px 0; line-height:1.5;}
+
+  /* ---------- Translator ---------- */
+  .translate-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  @media (max-width:640px){ .translate-grid{ grid-template-columns:1fr; } }
+  .field label{ font-family:var(--font-mono); font-size:11px; letter-spacing:2px; color:var(--steel); display:block; margin-bottom:6px; }
+  textarea{
+    width:100%; min-height:110px; resize:vertical;
+    background:var(--bg-inset);
+    border:1px solid var(--steel-dim);
+    border-radius:4px;
+    color:var(--phosphor);
+    font-family:var(--font-mono);
+    font-size:15px;
+    letter-spacing:1px;
+    padding:10px 12px;
+    box-shadow:inset 0 0 12px rgba(0,0,0,0.6);
+    text-shadow:0 0 6px rgba(255,180,0,0.3);
+  }
+  textarea:focus{ outline:1.5px solid var(--brass); }
+  #morseBox{ letter-spacing:3px; }
+
+  .controls-row{ display:flex; flex-wrap:wrap; gap:16px; align-items:center; margin-top:14px; }
+  .slider-group{ display:flex; flex-direction:column; gap:4px; min-width:150px; }
+  .slider-group label{ font-family:var(--font-mono); font-size:10.5px; letter-spacing:1.5px; color:var(--steel);}
+  .slider-group .val{ color:var(--phosphor); }
+  input[type=range]{ accent-color:var(--brass); width:100%; }
+
+  button{
+    font-family:var(--font-ui); font-weight:700; letter-spacing:1px;
+    border-radius:4px; cursor:pointer; border:1px solid var(--steel-dim);
+    transition:all 100ms ease;
+  }
+  .btn-primary{
+    background:linear-gradient(180deg, #3a4130, #262b1c);
+    color:var(--phosphor);
+    padding:10px 20px;
+    font-size:14px;
+    border-color:var(--brass-dim);
+    box-shadow:0 2px 0 rgba(0,0,0,0.5);
+  }
+  .btn-primary:hover{ background:linear-gradient(180deg, #454d38, #2c3222); }
+  .btn-primary:active{ transform:translateY(1px); box-shadow:none; }
+  .btn-primary:disabled{ opacity:0.4; cursor:not-allowed; }
+  .btn-stop{ border-color:#7a2c1e; color:#ffb0a0; }
+  .btn-secondary{
+    background:var(--bg-inset); color:var(--paper); padding:8px 14px; font-size:12.5px;
+  }
+  .btn-secondary:hover{ border-color:var(--brass-dim); color:var(--phosphor);}
+
+  .tx-lamp-box{ display:flex; align-items:center; gap:10px; margin-left:auto; }
+  .tx-lamp{
+    width:20px; height:20px; border-radius:50%;
+    background:#3a1c14; border:2px solid #1a1a1a;
+    box-shadow:inset 0 0 4px rgba(0,0,0,0.9);
+    transition:all 40ms linear;
+  }
+  .tx-lamp.on{ background:radial-gradient(circle at 35% 30%, #ffe9a0, var(--phosphor)); box-shadow:0 0 16px 5px rgba(255,180,0,0.85);}
+  .tx-lamp-box span{ font-family:var(--font-mono); font-size:11px; letter-spacing:1.5px; color:var(--steel);}
+
+  .timing-readout{
+    margin-top:14px;
+    background:var(--bg-inset);
+    border:1px solid var(--steel-dim);
+    border-radius:4px;
+    padding:10px 14px;
+    font-family:var(--font-mono);
+    font-size:13px;
+    color:var(--green);
+    min-height:20px;
+    text-shadow:0 0 6px rgba(111,214,106,0.4);
+  }
+  .timing-readout .dim{ color:var(--paper-dim); }
+
+  /* ---------- Reference chart ---------- */
+  .chart-grid{
+    display:grid;
+    grid-template-columns:repeat(4, 1fr);
+    gap:5px;
+    max-height:340px;
+    overflow-y:auto;
+    padding-right:4px;
+  }
+  .chart-grid::-webkit-scrollbar{ width:6px; }
+  .chart-grid::-webkit-scrollbar-thumb{ background:var(--steel-dim); border-radius:3px; }
+  .chart-cell{
+    background:var(--bg-inset); border:1px solid var(--steel-dim); border-radius:3px;
+    padding:6px 4px; text-align:center; cursor:pointer; color:var(--paper);
+  }
+  .chart-cell:hover{ border-color:var(--brass); background:#20260f; }
+  .chart-cell .ch{ font-family:var(--font-ui); font-weight:700; font-size:14px; color:var(--phosphor); }
+  .chart-cell .mo{ font-family:var(--font-mono); font-size:11px; color:var(--steel); letter-spacing:1px; }
+
+  /* ---------- Teaching accordion ---------- */
+  details{
+    background:var(--bg-inset); border:1px solid var(--steel-dim); border-radius:4px;
+    margin-bottom:8px; padding:9px 12px;
+  }
+  details summary{
+    cursor:pointer; font-family:var(--font-ui); font-weight:700; font-size:13.5px;
+    color:var(--brass); letter-spacing:0.5px; list-style:none;
+  }
+  details summary::-webkit-details-marker{ display:none; }
+  details summary::before{ content:"▸ "; color:var(--steel); }
+  details[open] summary::before{ content:"▾ "; }
+  details p, details ul{ font-size:12.5px; color:var(--paper-dim); line-height:1.6; margin:8px 0 2px; }
+  details code{ background:#000; color:var(--green); padding:1px 5px; border-radius:2px; font-family:var(--font-mono); font-size:11.5px;}
+
+  /* ---------- Practice ---------- */
+  .practice-controls{ display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:14px;}
+  select{
+    background:var(--bg-inset); color:var(--phosphor); border:1px solid var(--steel-dim);
+    border-radius:4px; padding:7px 10px; font-family:var(--font-ui); font-weight:600; font-size:13px;
+  }
+  .score-strip{
+    display:flex; gap:22px; font-family:var(--font-mono); font-size:13px; color:var(--paper-dim);
+    margin-left:auto;
+  }
+  .score-strip b{ color:var(--phosphor); font-size:16px; }
+
+  .practice-stage{
+    background:var(--bg-inset); border:1px solid var(--steel-dim); border-radius:5px;
+    padding:20px; text-align:center; margin-bottom:12px;
+  }
+  .target-display{
+    font-family:var(--font-display); font-weight:800; font-size:38px; letter-spacing:4px;
+    color:var(--phosphor); text-shadow:0 0 14px rgba(255,180,0,0.4); min-height:48px;
+  }
+  .target-morse{ font-family:var(--font-mono); font-size:15px; color:var(--steel); letter-spacing:3px; min-height:20px; margin-top:4px;}
+  .feedback{ font-family:var(--font-mono); font-size:13px; min-height:20px; margin-top:10px; letter-spacing:1px;}
+  .feedback.correct{ color:var(--green); }
+  .feedback.wrong{ color:var(--alert-glow); }
+
+  .answer-row{ display:flex; gap:8px; justify-content:center; margin-top:10px; flex-wrap:wrap;}
+  input[type=text]{
+    background:var(--bg-inset); border:1px solid var(--steel-dim); border-radius:4px;
+    color:var(--phosphor); font-family:var(--font-mono); font-size:15px; padding:8px 12px;
+    letter-spacing:2px; width:200px;
+  }
+  input[type=text]:focus{ outline:1.5px solid var(--brass); }
+
+  /* Telegraph key */
+  .key-wrap{ display:flex; flex-direction:column; align-items:center; gap:10px; margin-top:6px;}
+  .telegraph-key{
+    width:220px; height:70px; border-radius:8px;
+    background:linear-gradient(180deg, #3a4130, #1c2116);
+    border:2px solid var(--steel-dim);
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--font-ui); font-weight:700; letter-spacing:1.5px; color:var(--paper-dim);
+    cursor:pointer; user-select:none; font-size:13px;
+    box-shadow:0 3px 0 rgba(0,0,0,0.5);
+    transition:all 60ms ease;
+  }
+  .telegraph-key.pressed{
+    transform:translateY(3px); box-shadow:none;
+    background:linear-gradient(180deg, #4a5238, #262c1c);
+    color:var(--phosphor);
+    border-color:var(--brass);
+  }
+  .telegraph-key:focus{ outline:1.5px solid var(--brass); }
+  .buffer-display{ font-family:var(--font-mono); font-size:16px; color:var(--green); letter-spacing:4px; min-height:22px;}
+  .decoded-display{ font-family:var(--font-mono); font-size:13px; color:var(--paper-dim); min-height:18px;}
+
+  .hint{ font-size:11.5px; color:var(--steel); font-family:var(--font-mono); margin-top:4px;}
+
+  /* Challenge mode */
+  .challenge-timer{
+    font-family:var(--font-display); font-weight:800; font-size:52px; letter-spacing:2px;
+    color:var(--green); text-shadow:0 0 14px rgba(111,214,106,0.45);
+    line-height:1;
+  }
+  .challenge-timer.urgent{ color:var(--alert-glow); text-shadow:0 0 16px rgba(255,106,71,0.65); animation:pulseUrgent 0.6s infinite; }
+  @keyframes pulseUrgent{ 0%,100%{ transform:scale(1);} 50%{ transform:scale(1.08);} }
+  .challenge-label{ font-family:var(--font-mono); font-size:10.5px; letter-spacing:2px; color:var(--paper-dim); margin-top:2px;}
+  .streak-strip{ display:flex; justify-content:center; gap:24px; margin-top:12px; font-family:var(--font-mono); font-size:12.5px; color:var(--paper-dim);}
+  .streak-strip b{ color:var(--phosphor); font-size:15px; }
+
+  footer{ text-align:center; font-family:var(--font-mono); font-size:10.5px; color:var(--steel-dim); margin:20px 0 6px;}
+
+.back-to-portfolio{
+    display:none;
+    position:fixed; top:14px; left:14px; z-index:500;
+    font-family:'Rajdhani',sans-serif; font-weight:600; font-size:12px; letter-spacing:.04em;
+    text-decoration:none; color:var(--phosphor);
+    background:var(--bg-panel-raised); border:1px solid var(--steel-dim); border-radius:4px;
+    padding:7px 12px;
+    transition:border-color .15s ease, color .15s ease;
+}
+.back-to-portfolio:hover{ border-color:var(--brass); color:var(--phosphor); }
+
+</style>
+</head>
+<body>
+
+<a href="/" class="back-to-portfolio" aria-label="Back to The Overworld portfolio">&larr; The Overworld</a>
+
+<div id="screenFlash"></div>
+
+<div class="frame">
+
+  <div class="header">
+    <div class="rivet tl"></div><div class="rivet tr"></div><div class="rivet bl"></div><div class="rivet br"></div>
+    <div>
+      <h1>MORSE STATION</h1>
+      <div class="sub">AN/PRC&#8209;77 &nbsp;&middot;&nbsp; FIELD TRANSCEIVER &nbsp;&middot;&nbsp; TEXT / TONE / KEY</div>
+    </div>
+    <div class="lamps">
+      <div class="lamp"><div class="bulb lit-green"></div><label>POWER</label></div>
+      <div class="lamp"><div class="bulb" id="txLampSmall"></div><label>TX</label></div>
+    </div>
+  </div>
+
+  <div class="layout">
+
+    <!-- LEFT COLUMN -->
+    <div>
+
+      <!-- TRANSLATOR -->
+      <div class="panel">
+        <p class="panel-label">TRANSLATOR <span class="tag">LIVE</span></p>
+        <p class="panel-desc">Type in either field &mdash; the other updates as you go. Hit TRANSMIT to hear it and watch the lamp key the signal.</p>
+
+        <div class="translate-grid">
+          <div class="field">
+            <label>ENGLISH</label>
+            <textarea id="englishBox" placeholder="Type a message&hellip;" autocomplete="off" spellcheck="false"></textarea>
+          </div>
+          <div class="field">
+            <label>MORSE ( . &ndash;  space = letter gap  /  = word gap )</label>
+            <textarea id="morseBox" placeholder="Or type morse here&hellip;" autocomplete="off" spellcheck="false"></textarea>
+          </div>
+        </div>
+
+        <div class="controls-row">
+          <div class="slider-group">
+            <label>SPEED &mdash; <span class="val" id="wpmVal">15</span> WPM</label>
+            <input type="range" id="wpmSlider" min="5" max="35" value="15">
+          </div>
+          <div class="slider-group">
+            <label>TONE &mdash; <span class="val" id="freqVal">600</span> Hz</label>
+            <input type="range" id="freqSlider" min="350" max="900" value="600">
+          </div>
+          <button class="btn-primary" id="playBtn">&#9658; TRANSMIT</button>
+          <button class="btn-primary btn-stop" id="stopBtn" disabled>&#9632; STOP</button>
+          <div class="tx-lamp-box">
+            <div class="tx-lamp" id="txLampBig"></div>
+            <span>KEYING</span>
+          </div>
+        </div>
+
+        <div class="timing-readout" id="timingReadout">
+          <span class="dim">STANDBY &mdash; unit length at 15 WPM is 80ms (dot=80ms, dash=240ms, letter gap=240ms, word gap=560ms)</span>
+        </div>
+      </div>
+
+      <!-- PRACTICE -->
+      <div class="panel">
+        <p class="panel-label">PRACTICE MODE <span class="tag">DRILL</span></p>
+        <p class="panel-desc">Train your ear and your hand. Choose a drill, then either type what you hear, or key out what you're shown on the telegraph key.</p>
+
+        <div class="practice-controls">
+          <select id="practiceType">
+            <option value="letters">Random Letters</option>
+            <option value="words">Random Words</option>
+          </select>
+          <select id="practiceMode">
+            <option value="listen">Listen &amp; Type</option>
+            <option value="key">Key It Out</option>
+            <option value="challenge">Challenge (Timed)</option>
+          </select>
+          <select id="challengeDuration" style="display:none;">
+            <option value="30">30s</option>
+            <option value="60" selected>60s</option>
+            <option value="120">120s</option>
+          </select>
+          <button class="btn-secondary" id="startPracticeBtn">START DRILL</button>
+          <div class="score-strip">
+            <div>SCORE <b id="scoreVal">0</b>/<span id="attemptsVal">0</span></div>
+            <div>ACCURACY <b id="accuracyVal">&mdash;</b></div>
+          </div>
+        </div>
+
+        <!-- Listen & Type stage -->
+        <div class="practice-stage" id="listenStage" style="display:none;">
+          <div class="target-morse">LISTEN, THEN TYPE WHAT YOU HEAR</div>
+          <div class="answer-row">
+            <input type="text" id="answerInput" placeholder="your answer" autocomplete="off">
+            <button class="btn-secondary" id="replayBtn">&#9658; REPLAY</button>
+            <button class="btn-primary" id="submitAnswerBtn">SUBMIT</button>
+          </div>
+          <div class="feedback" id="listenFeedback"></div>
+        </div>
+
+        <!-- Key It Out stage -->
+        <div class="practice-stage" id="keyStage" style="display:none;">
+          <div class="target-display" id="keyTarget">&mdash;</div>
+          <div class="target-morse" id="keyTargetMorse"></div>
+          <div class="key-wrap">
+            <div class="telegraph-key" id="telegraphKey" tabindex="0">HOLD SPACE OR CLICK &mdash; TAP HERE</div>
+            <div class="buffer-display" id="keyBufferDisplay">&nbsp;</div>
+            <div class="decoded-display" id="keyDecodedDisplay">sent: &mdash;</div>
+            <div class="answer-row">
+              <button class="btn-secondary" id="clearKeyBtn">CLEAR</button>
+              <button class="btn-primary" id="checkKeyBtn">CHECK</button>
+            </div>
+            <div class="hint">short tap = dot &middot; hold = dash &middot; pause = letter gap auto-detected</div>
+          </div>
+          <div class="feedback" id="keyFeedback"></div>
+        </div>
+
+        <!-- Challenge stage -->
+        <div class="practice-stage" id="challengeStage" style="display:none;">
+          <div class="challenge-timer" id="challengeTimer">60</div>
+          <div class="challenge-label">SECONDS REMAINING</div>
+          <div class="target-morse" style="margin-top:10px;">DECODE EACH TRANSMISSION AS FAST AS YOU CAN &mdash; ENTER TO SUBMIT</div>
+          <div class="answer-row">
+            <input type="text" id="challengeInput" placeholder="type what you hear" autocomplete="off" disabled>
+          </div>
+          <div class="feedback" id="challengeFeedback"></div>
+          <div class="streak-strip">
+            <div>STREAK <b id="streakVal">0</b></div>
+            <div>BEST STREAK <b id="bestStreakVal">0</b></div>
+          </div>
+        </div>
+
+        <div class="practice-stage" id="idleStage">
+          <div style="color:var(--paper-dim); font-family:var(--font-mono); font-size:13px;">Press START DRILL to begin.</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div>
+      <div class="panel">
+        <p class="panel-label">REFERENCE CHART</p>
+        <p class="panel-desc">Tap a cell to drop it into the English field.</p>
+        <div class="chart-grid" id="chartGrid"></div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <footer>STATION OPERATIONAL &middot; ALL TIMES IN MILLISECONDS &middot; 1200/WPM</footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---------------- Morse map ----------------
+  const MORSE_MAP = {
+    A:'.-', B:'-...', C:'-.-.', D:'-..', E:'.', F:'..-.', G:'--.', H:'....',
+    I:'..', J:'.---', K:'-.-', L:'.-..', M:'--', N:'-.', O:'---', P:'.--.',
+    Q:'--.-', R:'.-.', S:'...', T:'-', U:'..-', V:'...-', W:'.--', X:'-..-',
+    Y:'-.--', Z:'--..',
+    '0':'-----','1':'.----','2':'..---','3':'...--','4':'....-',
+    '5':'.....','6':'-....','7':'--...','8':'---..','9':'----.',
+    '.':'.-.-.-', ',':'--..--', '?':'..--..', "'":'.----.', '!':'-.-.--',
+    '/':'-..-.', '(':'-.--.', ')':'-.--.-', '&':'.-...', ':':'---...',
+    ';':'-.-.-.', '=':'-...-', '+':'.-.-.', '-':'-....-', '_':'..--.-',
+    '"':'.-..-.', '$':'...-..-', '@':'.--.-.'
+  };
+  const REVERSE_MAP = {};
+  Object.keys(MORSE_MAP).forEach(k => REVERSE_MAP[MORSE_MAP[k]] = k);
+
+  function encodeToMorse(text){
+    return text.toUpperCase().split('').map(ch=>{
+      if(ch === ' ') return '/';
+      if(ch === '\n') return '/';
+      if(MORSE_MAP[ch]) return MORSE_MAP[ch];
+      return null;
+    }).filter(x=>x!==null).join(' ');
+  }
+  function decodeToText(morse){
+    return morse.trim().split(/\s+/).filter(Boolean).map(tok=>{
+      if(tok==='/') return ' ';
+      return REVERSE_MAP[tok] || '';
+    }).join('').replace(/ +/g,' ');
+  }
+
+  // ---------------- Elements ----------------
+  const englishBox = document.getElementById('englishBox');
+  const morseBox = document.getElementById('morseBox');
+  const wpmSlider = document.getElementById('wpmSlider');
+  const wpmVal = document.getElementById('wpmVal');
+  const freqSlider = document.getElementById('freqSlider');
+  const freqVal = document.getElementById('freqVal');
+  const playBtn = document.getElementById('playBtn');
+  const stopBtn = document.getElementById('stopBtn');
+  const txLampBig = document.getElementById('txLampBig');
+  const txLampSmall = document.getElementById('txLampSmall');
+  const screenFlash = document.getElementById('screenFlash');
+  const timingReadout = document.getElementById('timingReadout');
+  const chartGrid = document.getElementById('chartGrid');
+
+  let isSyncing = false;
+  englishBox.addEventListener('input', ()=>{
+    if(isSyncing) return;
+    isSyncing = true;
+    morseBox.value = encodeToMorse(englishBox.value);
+    isSyncing = false;
+    updateStandbyReadout();
+  });
+  morseBox.addEventListener('input', ()=>{
+    if(isSyncing) return;
+    isSyncing = true;
+    englishBox.value = decodeToText(morseBox.value);
+    isSyncing = false;
+    updateStandbyReadout();
+  });
+
+  function currentUnitMs(){ return 1200 / Number(wpmSlider.value); }
+  function updateStandbyReadout(){
+    if(playbackController) return; // don't clobber live readout
+    const u = currentUnitMs();
+    timingReadout.innerHTML = `<span class="dim">STANDBY &mdash; unit length at ${wpmSlider.value} WPM is ${u.toFixed(0)}ms (dot=${u.toFixed(0)}ms, dash=${(u*3).toFixed(0)}ms, letter gap=${(u*3).toFixed(0)}ms, word gap=${(u*7).toFixed(0)}ms)</span>`;
+  }
+  wpmSlider.addEventListener('input', ()=>{ wpmVal.textContent = wpmSlider.value; updateStandbyReadout(); });
+  freqSlider.addEventListener('input', ()=>{ freqVal.textContent = freqSlider.value; });
+
+  // ---------------- Reference chart ----------------
+  Object.keys(MORSE_MAP).forEach(ch=>{
+    const cell = document.createElement('div');
+    cell.className = 'chart-cell';
+    cell.innerHTML = `<div class="ch">${ch}</div><div class="mo">${MORSE_MAP[ch]}</div>`;
+    cell.addEventListener('click', ()=>{
+      englishBox.value += (ch === ' ' ? ' ' : ch.toLowerCase());
+      englishBox.dispatchEvent(new Event('input'));
+      englishBox.focus();
+    });
+    chartGrid.appendChild(cell);
+  });
+
+  // ---------------- Audio engine ----------------
+  let audioCtx = null;
+  function getCtx(){
+    if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if(audioCtx.state === 'suspended') audioCtx.resume();
+    return audioCtx;
+  }
+
+  let activeOsc = null, activeGain = null;
+  function startTone(durationMs){
+    const ctx = getCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.frequency.value = Number(freqSlider.value);
+    osc.type = 'sine';
+    gain.gain.value = 0;
+    osc.connect(gain).connect(ctx.destination);
+    const now = ctx.currentTime;
+    const attack = 0.006, release = 0.008;
+    const durSec = durationMs/1000;
+    gain.gain.setValueAtTime(0, now);
+    gain.gain.linearRampToValueAtTime(0.28, now + attack);
+    gain.gain.setValueAtTime(0.28, now + Math.max(attack, durSec - release));
+    gain.gain.linearRampToValueAtTime(0, now + durSec);
+    osc.start(now);
+    osc.stop(now + durSec + 0.01);
+    activeOsc = osc; activeGain = gain;
+  }
+  function killTone(){
+    if(activeOsc){
+      try{ activeOsc.stop(); }catch(e){}
+      activeOsc = null;
+    }
+  }
+
+  // ---------------- Schedule builder ----------------
+  function buildSchedule(morseStr, unit){
+    const tokens = morseStr.trim().split(/\s+/).filter(Boolean);
+    const events = [];
+    tokens.forEach((token, idx)=>{
+      if(token === '/'){
+        events.push({type:'gap', duration: unit*7, label:'WORD GAP'});
+        return;
+      }
+      for(let i=0;i<token.length;i++){
+        if(i>0) events.push({type:'gap', duration: unit*1, label:'symbol gap'});
+        const ch = token[i];
+        events.push({type:'tone', symbol: ch, duration: ch==='.' ? unit : unit*3, letter: REVERSE_MAP[token] || '?'});
+      }
+      const next = tokens[idx+1];
+      if(next !== undefined && next !== '/'){
+        events.push({type:'gap', duration: unit*3, label:'LETTER GAP'});
+      }
+    });
+    return events;
+  }
+
+  // ---------------- Flash / lamp ----------------
+  function lampOn(){ txLampBig.classList.add('on'); txLampSmall.classList.add('lit-red'); screenFlash.classList.add('on'); }
+  function lampOff(){ txLampBig.classList.remove('on'); txLampSmall.classList.remove('lit-red'); screenFlash.classList.remove('on'); }
+
+  // ---------------- Playback controller ----------------
+  let playbackController = null;
+
+  function playMorse(morseStr, onDone){
+    if(playbackController) playbackController.stop();
+    const unit = currentUnitMs();
+    const events = buildSchedule(morseStr, unit);
+    if(events.length === 0){ if(onDone) onDone(); return null; }
+
+    let idx = 0, stopped = false, timeoutId = null;
+
+    function step(){
+      if(stopped){ return; }
+      if(idx >= events.length){
+        lampOff();
+        playbackController = null;
+        playBtn.disabled = false; stopBtn.disabled = true;
+        updateStandbyReadout();
+        if(onDone) onDone();
+        return;
+      }
+      const ev = events[idx++];
+      if(ev.type === 'tone'){
+        startTone(ev.duration);
+        lampOn();
+        timingReadout.innerHTML = `SENDING <b style="color:var(--phosphor)">${ev.letter}</b> &mdash; ${ev.symbol==='.' ? 'DOT' : 'DASH'} <span class="dim">(${ev.duration.toFixed(0)}ms)</span>`;
+        timeoutId = setTimeout(()=>{ lampOff(); step(); }, ev.duration);
+      } else {
+        lampOff();
+        timingReadout.innerHTML = `<span class="dim">${ev.label} (${ev.duration.toFixed(0)}ms)</span>`;
+        timeoutId = setTimeout(step, ev.duration);
+      }
+    }
+    step();
+
+    return {
+      stop(){
+        stopped = true;
+        clearTimeout(timeoutId);
+        killTone();
+        lampOff();
+      }
+    };
+  }
+
+  playBtn.addEventListener('click', ()=>{
+    if(!morseBox.value.trim()) return;
+    playBtn.disabled = true; stopBtn.disabled = false;
+    playbackController = playMorse(morseBox.value, ()=>{});
+  });
+  stopBtn.addEventListener('click', ()=>{
+    if(playbackController) playbackController.stop();
+    playbackController = null;
+    playBtn.disabled = false; stopBtn.disabled = true;
+    updateStandbyReadout();
+  });
+
+  // ---------------- Seed initial content ----------------
+  englishBox.value = 'SOS';
+  morseBox.value = encodeToMorse('SOS');
+  updateStandbyReadout();
+
+  // =======================================================
+  // PRACTICE MODE
+  // =======================================================
+  const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+  const WORDS = ['THE','AND','SOS','HELP','RADIO','MORSE','CODE','SHIP','STORM','NORTH',
+    'SOUTH','PILOT','ALPHA','BRAVO','ECHO','DELTA','ANCHOR','SIGNAL','RESCUE','STATIC',
+    'FIELD','UNIT','BASE','OVER','OUT'];
+
+  const practiceType = document.getElementById('practiceType');
+  const practiceMode = document.getElementById('practiceMode');
+  const startPracticeBtn = document.getElementById('startPracticeBtn');
+  const scoreVal = document.getElementById('scoreVal');
+  const attemptsVal = document.getElementById('attemptsVal');
+  const accuracyVal = document.getElementById('accuracyVal');
+
+  const idleStage = document.getElementById('idleStage');
+  const listenStage = document.getElementById('listenStage');
+  const keyStage = document.getElementById('keyStage');
+  const challengeStage = document.getElementById('challengeStage');
+  const challengeDuration = document.getElementById('challengeDuration');
+  const challengeTimer = document.getElementById('challengeTimer');
+  const challengeInput = document.getElementById('challengeInput');
+  const challengeFeedback = document.getElementById('challengeFeedback');
+  const streakVal = document.getElementById('streakVal');
+  const bestStreakVal = document.getElementById('bestStreakVal');
+
+  const answerInput = document.getElementById('answerInput');
+  const replayBtn = document.getElementById('replayBtn');
+  const submitAnswerBtn = document.getElementById('submitAnswerBtn');
+  const listenFeedback = document.getElementById('listenFeedback');
+
+  const keyTarget = document.getElementById('keyTarget');
+  const keyTargetMorse = document.getElementById('keyTargetMorse');
+  const telegraphKey = document.getElementById('telegraphKey');
+  const keyBufferDisplay = document.getElementById('keyBufferDisplay');
+  const keyDecodedDisplay = document.getElementById('keyDecodedDisplay');
+  const clearKeyBtn = document.getElementById('clearKeyBtn');
+  const checkKeyBtn = document.getElementById('checkKeyBtn');
+  const keyFeedback = document.getElementById('keyFeedback');
+
+  let score = 0, attempts = 0;
+  let currentTarget = '';
+  let awaitingNext = false;
+
+  function updateScore(){
+    scoreVal.textContent = score;
+    attemptsVal.textContent = attempts;
+    accuracyVal.textContent = attempts === 0 ? '\u2014' : Math.round((score/attempts)*100) + '%';
+  }
+
+  function pickTarget(){
+    if(practiceType.value === 'letters'){
+      return LETTERS[Math.floor(Math.random()*LETTERS.length)];
+    }
+    return WORDS[Math.floor(Math.random()*WORDS.length)];
+  }
+
+  function showStage(){
+    idleStage.style.display = 'none';
+    listenStage.style.display = practiceMode.value === 'listen' ? 'block' : 'none';
+    keyStage.style.display = practiceMode.value === 'key' ? 'block' : 'none';
+    challengeStage.style.display = practiceMode.value === 'challenge' ? 'block' : 'none';
+    challengeDuration.style.display = practiceMode.value === 'challenge' ? 'inline-block' : 'none';
+  }
+
+  startPracticeBtn.addEventListener('click', ()=>{
+    showStage();
+    if(practiceMode.value === 'challenge'){
+      startChallenge();
+    } else {
+      nextRound();
+    }
+  });
+
+  function nextRound(){
+    currentTarget = pickTarget();
+    awaitingNext = false;
+    if(practiceMode.value === 'listen'){
+      answerInput.value = '';
+      listenFeedback.textContent = '';
+      listenFeedback.className = 'feedback';
+      submitAnswerBtn.textContent = 'SUBMIT';
+      playPracticeAudio();
+      answerInput.focus();
+    } else {
+      keyBuffer = ''; keyDecoded = '';
+      keyTarget.textContent = currentTarget;
+      keyTargetMorse.textContent = encodeToMorse(currentTarget);
+      keyFeedback.textContent = '';
+      keyFeedback.className = 'feedback';
+      keyBufferDisplay.textContent = '\u00A0';
+      keyDecodedDisplay.textContent = 'sent: \u2014';
+    }
+  }
+
+  function playPracticeAudio(){
+    const morse = encodeToMorse(currentTarget);
+    if(playbackController) playbackController.stop();
+    playbackController = playMorse(morse, ()=>{});
+  }
+  replayBtn.addEventListener('click', playPracticeAudio);
+
+  function submitListenAnswer(){
+    if(awaitingNext){ nextRound(); return; }
+    const guess = answerInput.value.trim().toUpperCase();
+    attempts++;
+    const correct = guess === currentTarget;
+    if(correct) score++;
+    updateScore();
+    listenFeedback.textContent = correct
+      ? 'CORRECT \u2713'
+      : `NOT QUITE \u2014 it was "${currentTarget}" (${encodeToMorse(currentTarget)})`;
+    listenFeedback.className = 'feedback ' + (correct ? 'correct' : 'wrong');
+    submitAnswerBtn.textContent = 'NEXT \u25B8';
+    awaitingNext = true;
+  }
+  submitAnswerBtn.addEventListener('click', submitListenAnswer);
+  answerInput.addEventListener('keydown', (e)=>{
+    if(e.key === 'Enter'){ e.preventDefault(); submitListenAnswer(); }
+  });
+
+  // ---------------- Telegraph key input ----------------
+  let keyBuffer = '';
+  let keyDecoded = '';
+  let pressStart = 0;
+  let isPressed = false;
+  let letterGapTimer = null;
+  const DOT_THRESHOLD_MS = 250;
+  const LETTER_GAP_MS = 700;
+
+  function finalizeLetterFromBuffer(){
+    if(!keyBuffer) return;
+    const ch = REVERSE_MAP[keyBuffer] || '?';
+    keyDecoded += ch;
+    keyBuffer = '';
+    keyBufferDisplay.textContent = '\u00A0';
+    keyDecodedDisplay.textContent = 'sent: ' + keyDecoded;
+  }
+
+  function keyPress(){
+    if(isPressed) return;
+    isPressed = true;
+    pressStart = performance.now();
+    telegraphKey.classList.add('pressed');
+    lampOn();
+    clearTimeout(letterGapTimer);
+  }
+  function keyRelease(){
+    if(!isPressed) return;
+    isPressed = false;
+    const duration = performance.now() - pressStart;
+    telegraphKey.classList.remove('pressed');
+    lampOff();
+    const symbol = duration < DOT_THRESHOLD_MS ? '.' : '-';
+    keyBuffer += symbol;
+    keyBufferDisplay.textContent = keyBuffer;
+    clearTimeout(letterGapTimer);
+    letterGapTimer = setTimeout(finalizeLetterFromBuffer, LETTER_GAP_MS);
+  }
+
+  telegraphKey.addEventListener('mousedown', keyPress);
+  telegraphKey.addEventListener('mouseup', keyRelease);
+  telegraphKey.addEventListener('mouseleave', ()=>{ if(isPressed) keyRelease(); });
+  telegraphKey.addEventListener('touchstart', (e)=>{ e.preventDefault(); keyPress(); });
+  telegraphKey.addEventListener('touchend', (e)=>{ e.preventDefault(); keyRelease(); });
+
+  document.addEventListener('keydown', (e)=>{
+    if(e.code === 'Space' && keyStage.style.display !== 'none' && document.activeElement !== answerInput && document.activeElement.tagName !== 'TEXTAREA'){
+      e.preventDefault();
+      if(!e.repeat) keyPress();
+    }
+  });
+  document.addEventListener('keyup', (e)=>{
+    if(e.code === 'Space' && keyStage.style.display !== 'none' && document.activeElement.tagName !== 'TEXTAREA'){
+      e.preventDefault();
+      keyRelease();
+    }
+  });
+
+  clearKeyBtn.addEventListener('click', ()=>{
+    keyBuffer = ''; keyDecoded = '';
+    keyBufferDisplay.textContent = '\u00A0';
+    keyDecodedDisplay.textContent = 'sent: \u2014';
+    keyFeedback.textContent = '';
+    keyFeedback.className = 'feedback';
+    clearTimeout(letterGapTimer);
+  });
+
+  checkKeyBtn.addEventListener('click', ()=>{
+    if(awaitingNext){ nextRound(); checkKeyBtn.textContent = 'CHECK'; return; }
+    clearTimeout(letterGapTimer);
+    finalizeLetterFromBuffer();
+    attempts++;
+    const correct = keyDecoded === currentTarget;
+    if(correct) score++;
+    updateScore();
+    keyFeedback.textContent = correct
+      ? 'CORRECT \u2713'
+      : `NOT QUITE \u2014 you sent "${keyDecoded || '(nothing)'}", target was "${currentTarget}"`;
+    keyFeedback.className = 'feedback ' + (correct ? 'correct' : 'wrong');
+    checkKeyBtn.textContent = 'NEXT \u25B8';
+    awaitingNext = true;
+  });
+
+  practiceType.addEventListener('change', ()=>{
+    score=0; attempts=0; streak=0; bestStreak=0; updateScore();
+    if(challengeActive) stopChallenge(false);
+  });
+  practiceMode.addEventListener('change', ()=>{
+    if(challengeActive) stopChallenge(false);
+    showStage();
+  });
+
+  // ---------------- Challenge mode: decode live audio against the clock ----------------
+  let challengeActive = false;
+  let challengeInterval = null;
+  let challengeTimeLeft = 60;
+  let streak = 0, bestStreak = 0;
+
+  function updateChallengeTimerDisplay(){
+    challengeTimer.textContent = challengeTimeLeft;
+    challengeTimer.classList.toggle('urgent', challengeTimeLeft <= 10);
+  }
+
+  function startChallenge(){
+    challengeActive = true;
+    challengeTimeLeft = Number(challengeDuration.value);
+    streak = 0; bestStreak = 0;
+    streakVal.textContent = '0';
+    bestStreakVal.textContent = '0';
+    updateChallengeTimerDisplay();
+    challengeFeedback.textContent = '';
+    challengeFeedback.className = 'feedback';
+    challengeInput.disabled = false;
+    startPracticeBtn.disabled = true;
+    practiceType.disabled = true;
+    practiceMode.disabled = true;
+    challengeDuration.disabled = true;
+    clearInterval(challengeInterval);
+    challengeInterval = setInterval(()=>{
+      challengeTimeLeft--;
+      updateChallengeTimerDisplay();
+      if(challengeTimeLeft <= 0) stopChallenge(true);
+    }, 1000);
+    nextChallengeRound();
+    challengeInput.focus();
+  }
+
+  function nextChallengeRound(){
+    currentTarget = pickTarget();
+    challengeInput.value = '';
+    if(playbackController) playbackController.stop();
+    playbackController = playMorse(encodeToMorse(currentTarget), ()=>{});
+  }
+
+  function submitChallengeAnswer(){
+    if(!challengeActive) return;
+    const guess = challengeInput.value.trim().toUpperCase();
+    if(guess === '') return;
+    attempts++;
+    const correct = guess === currentTarget;
+    if(correct){
+      score++; streak++;
+      if(streak > bestStreak) bestStreak = streak;
+      challengeFeedback.textContent = 'CORRECT \u2713';
+      challengeFeedback.className = 'feedback correct';
+    } else {
+      streak = 0;
+      challengeFeedback.textContent = `\u2717 was "${currentTarget}"`;
+      challengeFeedback.className = 'feedback wrong';
+    }
+    streakVal.textContent = streak;
+    bestStreakVal.textContent = bestStreak;
+    updateScore();
+    nextChallengeRound();
+  }
+
+  challengeInput.addEventListener('keydown', (e)=>{
+    if(e.key === 'Enter'){ e.preventDefault(); submitChallengeAnswer(); }
+  });
+
+  function stopChallenge(showSummary){
+    challengeActive = false;
+    clearInterval(challengeInterval);
+    if(playbackController) playbackController.stop();
+    challengeInput.disabled = true;
+    startPracticeBtn.disabled = false;
+    practiceType.disabled = false;
+    practiceMode.disabled = false;
+    challengeDuration.disabled = false;
+    if(showSummary){
+      challengeTimeLeft = 0;
+      updateChallengeTimerDisplay();
+      const rate = attempts === 0 ? 0 : Math.round((score/attempts)*100);
+      challengeFeedback.innerHTML = `TIME'S UP &mdash; ${score} correct &middot; ${rate}% accuracy &middot; best streak ${bestStreak}`;
+      challengeFeedback.className = 'feedback';
+    }
+  }
+
+  updateScore();
+})();
+
+// The "back to portfolio" link only makes sense if this page was opened
+// on its own (shared link, search result, typed URL). When it's embedded
+// inside the Siteseeing viewfinder's iframe, the link is not just
+// redundant - clicking it tries to navigate the iframe itself rather than
+// the real browser tab, which breaks in confusing ways depending on the
+// browser/OS. So it stays hidden by default and only reveals itself when
+// this window is truly top-level.
+if (window.self === window.top) {
+  const backLink = document.querySelector('.back-to-portfolio');
+  if (backLink) backLink.style.display = 'inline-block';
+}
+
+</script>
+</body>
+</html>

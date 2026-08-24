@@ -1,0 +1,191 @@
+
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;900&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=Share+Tech+Mono&family=Oswald:wght@500;600;700&display=swap');
+
+  :root{
+    --sky-top:#0a0715;
+    --sky-upper:#1a1130;
+    --sky-mid:#3c1f52;
+    --sky-low:#8a3f5a;
+    --sky-horizon:#e8834f;
+    --sky-band:#f2a35f;
+    --moon:#fdf6e3;
+    --ember:#ff9d42;
+    --firefly:#c8ff8a;
+    --swamp-glow:#7cff9e;
+    --parchment:#f4ead1;
+    --parchment-dim:#c9bd9e;
+    --ink:#1c1420;
+    --gold:#e0b45c;
+    --gold-bright:#f5d78a;
+    --vignette:rgba(4,2,10,.6);
+
+    /* Castle of Games interior */
+    --castle-bg:#0c0a16;
+    --castle-panel:#161228;
+    --castle-panel-alt:#1e1832;
+    --castle-line:rgba(212,175,55,.18);
+    --castle-crimson:#c81e3a;
+    --castle-crimson-bright:#ff3a56;
+    --castle-ink:#f1e9da;
+    --castle-ink-dim:#9d93ab;
+    --lvl1-a:#5fc7e8; --lvl1-b:#7bd88f;
+    --ppj-a:#e8dfc0;  --ppj-b:#7e9bc7;
+    --ric-a:#35e6e6;  --ric-b:#a24fe0;
+    --wrd-a:#3e8b8f;  --wrd-b:#d78b2c;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{
+    width:100%;height:100%;overflow:hidden;
+    background:var(--sky-top);
+    font-family:'Spectral',serif;
+    cursor:default;
+    -webkit-font-smoothing:antialiased;
+  }
+  #world{
+    position:relative;width:100vw;overflow:hidden; transform-origin:50% 50%;
+    height:100vh; /* fallback for browsers without dvh support */
+    height:100dvh; /* accounts for mobile browser chrome (address/tab bars) so bottom markers never clip */
+  }
+  #world.zooming{ transition:transform .85s cubic-bezier(.6,0,.15,1), filter .85s ease; }
+
+  #scene{
+    position:absolute;inset:0;
+    opacity:0;
+    animation:sceneIn 1.6s ease forwards .1s;
+    transform-origin:50% 50%;
+  }
+  @keyframes sceneIn{
+    from{opacity:0;transform:scale(1.04);}
+    to{opacity:1;transform:scale(1);}
+  }
+
+
+  /* ---------- SKY ---------- */
+  .sky{
+    position:absolute;inset:0;
+    background:linear-gradient(180deg,
+      var(--sky-top) 0%,
+      var(--sky-upper) 28%,
+      var(--sky-mid) 50%,
+      var(--sky-low) 75%,
+      var(--sky-band) 91%,
+      var(--sky-horizon) 100%);
+  }
+  .sky-aurora{
+    position:absolute;inset:0;pointer-events:none;
+    background:
+      radial-gradient(ellipse 60% 30% at 25% 15%, rgba(150,100,230,.20), transparent 60%),
+      radial-gradient(ellipse 50% 25% at 75% 10%, rgba(100,190,210,.14), transparent 65%),
+      radial-gradient(ellipse 40% 20% at 50% 4%, rgba(230,150,200,.10), transparent 60%);
+    mix-blend-mode:screen;
+    animation:auroraShift 14s ease-in-out infinite alternate;
+  }
+  @keyframes auroraShift{
+    from{opacity:.6;transform:translateX(-1%);}
+    to{opacity:1;transform:translateX(1%);}
+  }
+  .stars{position:absolute;inset:0;}
+  .star{
+    position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;
+    animation:twinkle 3.5s ease-in-out infinite;
+  }
+  .star.big{width:3px;height:3px;box-shadow:0 0 4px 1px rgba(255,255,255,.6);}
+  @keyframes twinkle{
+    0%,100%{opacity:.15;transform:scale(1);}
+    50%{opacity:.9;transform:scale(1.6);}
+  }
+  .shooting-star{
+    position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;
+    box-shadow:0 0 6px 2px rgba(255,255,255,.8);
+    opacity:0;
+  }
+  @keyframes shoot{
+    0%{opacity:0;transform:translate(0,0);}
+    5%{opacity:1;}
+    80%{opacity:1;}
+    100%{opacity:0;transform:translate(-220px,140px);}
+  }
+  .shooting-star::after{
+    content:'';position:absolute;top:1px;right:1px;width:90px;height:1px;
+    background:linear-gradient(90deg, rgba(255,255,255,.9), transparent);
+    transform:rotate(212deg);transform-origin:right center;
+  }
+
+  .moon{
+    position:absolute;top:8%;right:12%;width:70px;height:70px;border-radius:50%;
+    background:radial-gradient(circle at 35% 35%, #fffef2, var(--moon) 60%, #e8dcb0 100%);
+    box-shadow:0 0 60px 18px rgba(253,246,227,.35), 0 0 120px 50px rgba(253,246,227,.12);
+    animation:moonbreathe 8s ease-in-out infinite;
+  }
+  .moon::after{
+    content:'';position:absolute;inset:0;border-radius:50%;
+    background:radial-gradient(circle at 62% 42%, rgba(190,178,150,.4), transparent 40%),
+               radial-gradient(circle at 30% 65%, rgba(190,178,150,.28), transparent 35%),
+               radial-gradient(circle at 55% 70%, rgba(190,178,150,.22), transparent 30%);
+  }
+  @keyframes moonbreathe{
+    0%,100%{box-shadow:0 0 60px 18px rgba(253,246,227,.35), 0 0 120px 50px rgba(253,246,227,.12);}
+    50%{box-shadow:0 0 70px 24px rgba(253,246,227,.45), 0 0 140px 60px rgba(253,246,227,.18);}
+  }
+
+  /* clouds */
+  .cloud{
+    position:absolute;opacity:.14;filter:blur(1px);
+    background:#fff;border-radius:50%;
+    box-shadow: 40px 6px 0 -6px #fff, 80px 0 0 -10px #fff, -35px 8px 0 -8px #fff;
+    animation-name:drift; animation-timing-function:linear; animation-iteration-count:infinite;
+  }
+  @keyframes drift{ from{transform:translateX(-15vw);} to{transform:translateX(115vw);} }
+
+  #cloudLayer, #flyerLayer{ position:absolute; inset:0; pointer-events:none; z-index:2; }
+  /* birds & owl - shadowy silhouettes that occasionally cross the sky */
+  .flyer{ position:absolute; pointer-events:none; will-change:transform; }
+  .flyer .flap-wrap{ display:block; }
+  .flyer svg{ display:block; width:100%; height:100%; overflow:visible; }
+  .flyer .wing{ transform-box:view-box; }
+  .flyer.bird .wing-l{ transform-origin:12px 6px; animation:flapBirdL .42s cubic-bezier(.4,0,.2,1) infinite; }
+  .flyer.bird .wing-r{ transform-origin:12px 6px; animation:flapBirdR .42s cubic-bezier(.4,0,.2,1) infinite; }
+  .flyer.owl .wing-l{ transform-origin:20px 11px; animation:flapOwlL 1.6s cubic-bezier(.4,0,.2,1) infinite; }
+  .flyer.owl .wing-r{ transform-origin:20px 11px; animation:flapOwlR 1.6s cubic-bezier(.4,0,.2,1) infinite; }
+  @keyframes flapBirdL{ 0%,100%{transform:rotate(0deg);} 50%{transform:rotate(-34deg);} }
+  @keyframes flapBirdR{ 0%,100%{transform:rotate(0deg);} 50%{transform:rotate(34deg);} }
+  @keyframes flapOwlL{ 0%,100%{transform:rotate(0deg);} 22%{transform:rotate(-26deg);} 55%{transform:rotate(4deg);} }
+  @keyframes flapOwlR{ 0%,100%{transform:rotate(0deg);} 22%{transform:rotate(26deg);} 55%{transform:rotate(-4deg);} }
+  @keyframes flyacross{
+    from{ transform:translate(-8vw, 0) scale(1); }
+    to{ transform:translate(108vw, -6vh) scale(.85); }
+  }
+  @keyframes flyacrossRev{
+    from{ transform:translate(108vw, 0) scale(1) scaleX(-1); }
+    to{ transform:translate(-8vw, -5vh) scale(.9) scaleX(-1); }
+  }
+
+  /* ---------- TERRAIN LAYERS (static, no mouse-parallax) ---------- */
+  .parallax-layer{
+    position:absolute;left:-5%;width:110%;bottom:0;
+  }
+  .parallax-layer svg{display:block;width:100%;height:auto;}
+
+  /* scattered decorative trees */
+  #treeScatter{ position:absolute;inset:0; pointer-events:none; }
+  .scatter-tree{ position:absolute; transform-origin:50% 100%; }
+  .scatter-tree .sway-inner{ transform-origin:50% 100%; animation:sway 6s ease-in-out infinite; }
+
+  /* ---------- PARTICLE CANVAS ---------- */
+  #particles{position:absolute;inset:0;pointer-events:none;}
+
+  /* ---------- VIGNETTE + GRADE ---------- */
+  .vignette{
+    position:absolute;inset:0;pointer-events:none;z-index:15;
+    background:radial-gradient(ellipse 80% 80% at 50% 55%, transparent 50%, var(--vignette) 100%);
+  }
+  .grade{
+    position:absolute;inset:0;pointer-events:none;z-index:14;
+    background:linear-gradient(180deg, rgba(255,190,120,0) 0%, rgba(255,150,90,.06) 100%);
+    mix-blend-mode:overlay;
+  }
+
+  /* ---------- TRAIL ---------- */
+  #trail{ position:absolute; inset:0; z-index:5; }
+  .trail-line{ fill:none; stroke:var(--gold); stroke-width:.35; opacity:.28; stroke-linecap:round; stroke-dasharray:0 2.2; vector-effect:non-scaling-stroke; }
+  .trail-glow{ fill:none; stroke:var(--gold-bright); stroke-width:1; opacity:.06; filter:blur(2px); }

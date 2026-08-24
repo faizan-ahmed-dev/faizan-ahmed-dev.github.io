@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sorting Visualizer - Instrument Panel | Faizan Ahmed</title>
+<meta name="description" content="An interactive sorting algorithm visualizer built with vanilla JS - part of Faizan Ahmed's portfolio, The Overworld.">
+<link rel="canonical" href="https://faizanahmed.me/games/sorting-visualizer.html">
+<link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-Y9SX6CSDSR"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-Y9SX6CSDSR');
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+    --bg:#0B0D12;
+    --panel:#12151C;
+    --panel-2:#161A23;
+    --border:#232838;
+    --text:#E6E8EF;
+    --text-dim:#8890A6;
+    --cyan:#4CE0D2;
+    --amber:#F5B74C;
+    --red:#F0616B;
+    --green:#4CD787;
+    --font-display:'Space Grotesk', sans-serif;
+    --font-mono:'JetBrains Mono', monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(circle at 15% -10%, rgba(76,224,210,0.06), transparent 40%),
+      radial-gradient(circle at 90% 10%, rgba(245,183,76,0.05), transparent 35%),
+      var(--bg);
+    color:var(--text);
+    font-family:var(--font-mono);
+    min-height:100vh;
+    padding:28px 20px 60px;
+  }
+  a{color:var(--cyan);}
+  ::selection{ background:rgba(76,224,210,0.25); }
+  :focus-visible{ outline:2px solid var(--cyan); outline-offset:2px; }
+
+  .wrap{ max-width:1180px; margin:0 auto; }
+
+  header{ margin-bottom:22px; display:flex; align-items:flex-end; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+  .brand{ display:flex; align-items:center; gap:12px; }
+  .led{ width:10px; height:10px; border-radius:50%; background:var(--text-dim); box-shadow:0 0 0 3px rgba(255,255,255,0.03); transition:background .2s, box-shadow .2s; }
+  .led.idle{ background:var(--text-dim); }
+  .led.running{ background:var(--green); box-shadow:0 0 10px 2px rgba(76,215,135,0.6); animation:pulse 1s infinite; }
+  .led.paused{ background:var(--amber); box-shadow:0 0 10px 2px rgba(245,183,76,0.6); }
+  @keyframes pulse{ 0%,100%{opacity:1;} 50%{opacity:.45;} }
+
+  h1{ font-family:var(--font-display); font-size:26px; font-weight:700; letter-spacing:-0.01em; margin:0; }
+  .eyebrow{ font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--text-dim); margin:0 0 4px; }
+  .status-line{ font-size:12px; color:var(--text-dim); display:flex; align-items:center; gap:8px; }
+
+  .panel{
+    background:linear-gradient(180deg, var(--panel-2), var(--panel));
+    border:1px solid var(--border);
+    border-radius:10px;
+  }
+
+  .layout{ display:grid; grid-template-columns:280px 1fr; gap:16px; align-items:start; }
+  @media (max-width:920px){ .layout{ grid-template-columns:1fr; } }
+
+  /* Controls */
+  .controls{ padding:18px; display:flex; flex-direction:column; gap:18px; }
+  .control-group label{ display:block; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--text-dim); margin-bottom:6px; }
+  select, input[type="text"]{
+    width:100%; background:#0D1017; border:1px solid var(--border); color:var(--text);
+    font-family:var(--font-mono); font-size:13px; padding:9px 10px; border-radius:6px;
+  }
+  select:focus, input:focus{ border-color:var(--cyan); }
+  input[type="range"]{
+    -webkit-appearance:none; width:100%; height:4px; background:var(--border); border-radius:2px; outline:none;
+  }
+  input[type="range"]::-webkit-slider-thumb{
+    -webkit-appearance:none; width:14px; height:14px; border-radius:50%; background:var(--cyan);
+    box-shadow:0 0 8px rgba(76,224,210,0.7); cursor:pointer; margin-top:-5px;
+  }
+  input[type="range"]::-moz-range-thumb{
+    width:14px; height:14px; border-radius:50%; background:var(--cyan); border:none;
+    box-shadow:0 0 8px rgba(76,224,210,0.7); cursor:pointer;
+  }
+  .range-row{ display:flex; justify-content:space-between; font-size:11px; color:var(--text-dim); margin-top:4px; }
+  .range-val{ color:var(--cyan); font-weight:600; }
+
+  .btn-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  button{
+    font-family:var(--font-mono); font-size:12px; font-weight:600; letter-spacing:.03em;
+    padding:10px 8px; border-radius:6px; border:1px solid var(--border); background:#0D1017; color:var(--text);
+    cursor:pointer; transition:border-color .15s, color .15s, transform .05s;
+    text-transform:uppercase;
+  }
+  button:hover:not(:disabled){ border-color:var(--cyan); color:var(--cyan); }
+  button:active:not(:disabled){ transform:scale(0.97); }
+  button:disabled{ opacity:.35; cursor:not-allowed; }
+  button.primary{ background:linear-gradient(180deg, rgba(76,224,210,0.16), rgba(76,224,210,0.06)); border-color:rgba(76,224,210,0.5); color:var(--cyan); }
+  button.wide{ grid-column:1 / -1; }
+  button.danger{ border-color:rgba(240,97,107,0.4); color:var(--red); }
+  button.danger:hover:not(:disabled){ border-color:var(--red); }
+
+  .custom-array-row{ display:flex; gap:6px; }
+  .custom-array-row input{ flex:1; }
+  .hint{ font-size:10.5px; color:var(--text-dim); margin-top:5px; line-height:1.5; }
+
+  .info-box{ padding:14px; border-radius:8px; background:#0D1017; border:1px solid var(--border); font-size:12px; line-height:1.6; }
+  .info-box h3{ margin:0 0 8px; font-family:var(--font-display); font-size:14px; color:var(--cyan); }
+  .complexity-grid{ display:grid; grid-template-columns:auto 1fr; gap:4px 10px; margin:10px 0; font-size:12px; }
+  .complexity-grid dt{ color:var(--text-dim); }
+  .complexity-grid dd{ margin:0; color:var(--amber); font-weight:600; }
+  .desc-text{ color:var(--text-dim); }
+
+  /* Main area */
+  .main{ display:flex; flex-direction:column; gap:16px; }
+
+  .stats-bar{ display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--border); border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+  .stat{ background:var(--panel); padding:14px 16px; }
+  .stat .label{ font-size:10.5px; text-transform:uppercase; letter-spacing:.1em; color:var(--text-dim); margin-bottom:6px; }
+  .stat .value{ font-family:var(--font-display); font-size:22px; font-weight:700; color:var(--text); }
+  .stat .value.cyan{ color:var(--cyan); }
+  .stat .value.amber{ color:var(--amber); }
+  .stat .value.green{ color:var(--green); }
+
+  .viz-panel{ padding:20px; }
+  #chart{
+    height:380px; display:flex; align-items:flex-end; gap:2px; border-bottom:1px solid var(--border); padding-bottom:2px;
+  }
+  .bar{
+    flex:1; background:linear-gradient(180deg, var(--cyan), #1c7a70);
+    border-radius:3px 3px 0 0; position:relative; transition:height .08s ease, background .08s ease;
+    min-width:2px;
+  }
+  .bar.compare{ background:linear-gradient(180deg, var(--amber), #8a5f16); box-shadow:0 0 12px rgba(245,183,76,0.7); }
+  .bar.swap{ background:linear-gradient(180deg, var(--red), #7a2229); box-shadow:0 0 12px rgba(240,97,107,0.7); }
+  .bar.pivot{ background:linear-gradient(180deg, #fff, var(--red)); box-shadow:0 0 14px rgba(240,97,107,0.9); }
+  .bar.sorted{ background:linear-gradient(180deg, var(--green), #1f6b45); box-shadow:none; }
+
+  .legend{ display:flex; gap:18px; flex-wrap:wrap; margin-top:14px; font-size:11px; color:var(--text-dim); }
+  .legend span{ display:inline-flex; align-items:center; gap:6px; }
+  .swatch{ width:10px; height:10px; border-radius:2px; display:inline-block; }
+
+  footer{ text-align:center; color:var(--text-dim); font-size:11px; margin-top:30px; letter-spacing:.04em; }
+
+.back-to-portfolio{
+    display:none;
+    position:fixed; top:14px; left:14px; z-index:500;
+    font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:12px; letter-spacing:.02em;
+    text-decoration:none; color:var(--cyan);
+    background:var(--panel-2); border:1px solid var(--border); border-radius:4px;
+    padding:7px 12px;
+    transition:border-color .15s ease;
+}
+.back-to-portfolio:hover{ border-color:var(--cyan); }
+
+</style>
+</head>
+<body>
+<a href="/" class="back-to-portfolio" aria-label="Back to The Overworld portfolio">&larr; The Overworld</a>
+<div class="wrap">
+
+  <header>
+    <div>
+      <p class="eyebrow">Algorithm Instrument Panel</p>
+      <div class="brand">
+        <h1>Sorting Visualizer</h1>
+      </div>
+    </div>
+    <div class="status-line">
+      <span class="led idle" id="led"></span>
+      <span id="statusText">IDLE</span>
+    </div>
+  </header>
+
+  <div class="layout">
+
+    <!-- CONTROLS -->
+    <div class="panel controls">
+
+      <div class="control-group">
+        <label for="algoSelect">Algorithm</label>
+        <select id="algoSelect">
+          <option value="bubble">Bubble Sort</option>
+          <option value="selection">Selection Sort</option>
+          <option value="insertion">Insertion Sort</option>
+          <option value="merge">Merge Sort</option>
+          <option value="quick">Quick Sort</option>
+          <option value="heap">Heap Sort</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <label for="sizeRange">Array Size</label>
+        <input type="range" id="sizeRange" min="5" max="150" value="50">
+        <div class="range-row"><span>5</span><span class="range-val" id="sizeVal">50</span><span>150</span></div>
+      </div>
+
+      <div class="control-group">
+        <label for="speedRange">Animation Speed</label>
+        <input type="range" id="speedRange" min="1" max="100" value="60">
+        <div class="range-row"><span>Slow</span><span class="range-val" id="speedVal">60</span><span>Fast</span></div>
+      </div>
+
+      <div class="control-group">
+        <label>Sound</label>
+        <div class="btn-grid">
+          <button id="soundToggleBtn" class="wide primary">Sound: On</button>
+        </div>
+        <input type="range" id="volumeRange" min="0" max="100" value="35" style="margin-top:10px;">
+        <div class="range-row"><span>Quiet</span><span class="range-val" id="volumeVal">35</span><span>Loud</span></div>
+      </div>
+
+      <div class="control-group">
+        <label for="customArray">Custom Array</label>
+        <div class="custom-array-row">
+          <input type="text" id="customArray" placeholder="e.g. 5,3,8,1,9,2">
+          <button id="applyCustomBtn">Set</button>
+        </div>
+        <p class="hint">Comma-separated integers. Overrides size slider until you randomize again.</p>
+      </div>
+
+      <div class="control-group">
+        <label>Transport</label>
+        <div class="btn-grid">
+          <button id="randomBtn" class="wide">Randomize Array</button>
+          <button id="startBtn" class="primary">Start</button>
+          <button id="stepBtn">Step</button>
+          <button id="pauseBtn">Pause</button>
+          <button id="resumeBtn">Resume</button>
+          <button id="resetBtn" class="danger wide">Reset</button>
+        </div>
+      </div>
+
+      <div class="info-box" id="infoBox">
+        <!-- populated by JS -->
+      </div>
+
+    </div>
+
+    <!-- MAIN -->
+    <div class="main">
+
+      <div class="stats-bar">
+        <div class="stat">
+          <div class="label">Comparisons</div>
+          <div class="value cyan" id="statCompare">0</div>
+        </div>
+        <div class="stat">
+          <div class="label">Swaps / Writes</div>
+          <div class="value amber" id="statSwap">0</div>
+        </div>
+        <div class="stat">
+          <div class="label">Elapsed Time</div>
+          <div class="value" id="statTime">0.00s</div>
+        </div>
+        <div class="stat">
+          <div class="label">Array Size</div>
+          <div class="value green" id="statSize">50</div>
+        </div>
+      </div>
+
+      <div class="panel viz-panel">
+        <div id="chart"></div>
+        <div class="legend">
+          <span><span class="swatch" style="background:var(--cyan)"></span> unsorted</span>
+          <span><span class="swatch" style="background:var(--amber)"></span> comparing</span>
+          <span><span class="swatch" style="background:var(--red)"></span> swapping / pivot</span>
+          <span><span class="swatch" style="background:var(--green)"></span> sorted</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <footer>Vanilla JS &middot; generator-driven step engine &middot; no dependencies</footer>
+</div>
+
+
+<script>
+/* ---------------------------------------------------------
+   ALGORITHM METADATA (for the info panel)
+--------------------------------------------------------- */
+const ALGO_INFO = {
+  bubble: {
+    name: "Bubble Sort",
+    time: { best: "O(n)", avg: "O(n\u00B2)", worst: "O(n\u00B2)" },
+    space: "O(1)",
+    desc: "Repeatedly compares adjacent pairs and swaps them if out of order. Each pass bubbles the largest remaining value to the end. Simple, but slow on large arrays because it only ever fixes local disorder."
+  },
+  selection: {
+    name: "Selection Sort",
+    time: { best: "O(n\u00B2)", avg: "O(n\u00B2)", worst: "O(n\u00B2)" },
+    space: "O(1)",
+    desc: "Scans the unsorted remainder for the minimum value and places it at the front. Comparison count never changes with input order \u2014 it always scans everything \u2014 but it minimizes the number of swaps."
+  },
+  insertion: {
+    name: "Insertion Sort",
+    time: { best: "O(n)", avg: "O(n\u00B2)", worst: "O(n\u00B2)" },
+    space: "O(1)",
+    desc: "Builds a sorted region one item at a time, shifting larger values right to make room. Very fast on nearly-sorted data since few shifts are needed."
+  },
+  merge: {
+    name: "Merge Sort",
+    time: { best: "O(n log n)", avg: "O(n log n)", worst: "O(n log n)" },
+    space: "O(n)",
+    desc: "Recursively splits the array in half, sorts each half, then merges them back together in order. Guarantees O(n log n) regardless of input, at the cost of extra memory for merging."
+  },
+  quick: {
+    name: "Quick Sort",
+    time: { best: "O(n log n)", avg: "O(n log n)", worst: "O(n\u00B2)" },
+    space: "O(log n)",
+    desc: "Picks a pivot, partitions the array around it, then recurses on each side. Usually the fastest in practice due to in-place partitioning and good cache locality, but a poor pivot on already-sorted input degrades to O(n\u00B2)."
+  },
+  heap: {
+    name: "Heap Sort",
+    time: { best: "O(n log n)", avg: "O(n log n)", worst: "O(n log n)" },
+    space: "O(1)",
+    desc: "Builds a max-heap, then repeatedly removes the largest element and re-heapifies. Guarantees O(n log n) like merge sort, but sorts in place like quick sort \u2014 trading raw speed for consistency."
+  }
+};
+
+/* ---------------------------------------------------------
+   SORT GENERATORS
+   Each yields step objects describing what to animate:
+   { type: 'compare'|'swap'|'overwrite'|'pivot'|'sorted'|'done', indices, index, value }
+--------------------------------------------------------- */
+function* bubbleSort(arr) {
+  const n = arr.length;
+  for (let i = 0; i < n - 1; i++) {
+    let swapped = false;
+    for (let j = 0; j < n - 1 - i; j++) {
+      yield { type: "compare", indices: [j, j + 1] };
+      if (arr[j] > arr[j + 1]) {
+        [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];
+        swapped = true;
+        yield { type: "swap", indices: [j, j + 1] };
+      }
+    }
+    yield { type: "sorted", indices: [n - 1 - i] };
+    if (!swapped) break;
+  }
+  for (let i = 0; i < n; i++) yield { type: "sorted", indices: [i] };
+  yield { type: "done" };
+}
+
+function* selectionSort(arr) {
+  const n = arr.length;
+  for (let i = 0; i < n; i++) {
+    let min = i;
+    for (let j = i + 1; j < n; j++) {
+      yield { type: "compare", indices: [min, j] };
+      if (arr[j] < arr[min]) min = j;
+    }
+    if (min !== i) {
+      [arr[i], arr[min]] = [arr[min], arr[i]];
+      yield { type: "swap", indices: [i, min] };
+    }
+    yield { type: "sorted", indices: [i] };
+  }
+  yield { type: "done" };
+}
+
+function* insertionSort(arr) {
+  const n = arr.length;
+  for (let i = 1; i < n; i++) {
+    let key = arr[i];
+    let j = i - 1;
+    while (j >= 0) {
+      yield { type: "compare", indices: [j, j + 1] };
+      if (arr[j] > key) {
+        arr[j + 1] = arr[j];
+        yield { type: "overwrite", index: j + 1, value: arr[j + 1] };
+        j--;
+      } else break;
+    }
+    arr[j + 1] = key;
+    yield { type: "overwrite", index: j + 1, value: key };
+  }
+  for (let i = 0; i < n; i++) yield { type: "sorted", indices: [i] };
+  yield { type: "done" };
+}
+
+function* mergeSort(arr) {
+  function* sortRange(start, end) {
+    if (end - start <= 1) return;
+    const mid = Math.floor((start + end) / 2);
+    yield* sortRange(start, mid);
+    yield* sortRange(mid, end);
+    const left = arr.slice(start, mid);
+    const right = arr.slice(mid, end);
+    let i = 0, j = 0, k = start;
+    while (i < left.length && j < right.length) {
+      yield { type: "compare", indices: [start + i, mid + j] };
+      if (left[i] <= right[j]) { arr[k] = left[i]; i++; }
+      else { arr[k] = right[j]; j++; }
+      yield { type: "overwrite", index: k, value: arr[k] };
+      k++;
+    }
+    while (i < left.length) { arr[k] = left[i]; yield { type: "overwrite", index: k, value: arr[k] }; i++; k++; }
+    while (j < right.length) { arr[k] = right[j]; yield { type: "overwrite", index: k, value: arr[k] }; j++; k++; }
+  }
+  yield* sortRange(0, arr.length);
+  for (let i = 0; i < arr.length; i++) yield { type: "sorted", indices: [i] };
+  yield { type: "done" };
+}
+
+function* quickSort(arr) {
+  function* qs(lo, hi) {
+    if (lo > hi) return;
+    if (lo === hi) { yield { type: "sorted", indices: [lo] }; return; }
+    const pivot = arr[hi];
+    yield { type: "pivot", indices: [hi] };
+    let i = lo - 1;
+    for (let j = lo; j < hi; j++) {
+      yield { type: "compare", indices: [j, hi] };
+      if (arr[j] < pivot) {
+        i++;
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+        yield { type: "swap", indices: [i, j] };
+      }
+    }
+    [arr[i + 1], arr[hi]] = [arr[hi], arr[i + 1]];
+    yield { type: "swap", indices: [i + 1, hi] };
+    yield { type: "sorted", indices: [i + 1] };
+    yield* qs(lo, i);
+    yield* qs(i + 2, hi);
+  }
+  yield* qs(0, arr.length - 1);
+  yield { type: "done" };
+}
+
+function* heapSort(arr) {
+  const n = arr.length;
+  function* heapify(size, root) {
+    let largest = root;
+    const l = 2 * root + 1, r = 2 * root + 2;
+    if (l < size) { yield { type: "compare", indices: [l, largest] }; if (arr[l] > arr[largest]) largest = l; }
+    if (r < size) { yield { type: "compare", indices: [r, largest] }; if (arr[r] > arr[largest]) largest = r; }
+    if (largest !== root) {
+      [arr[root], arr[largest]] = [arr[largest], arr[root]];
+      yield { type: "swap", indices: [root, largest] };
+      yield* heapify(size, largest);
+    }
+  }
+  for (let i = Math.floor(n / 2) - 1; i >= 0; i--) yield* heapify(n, i);
+  for (let i = n - 1; i > 0; i--) {
+    [arr[0], arr[i]] = [arr[i], arr[0]];
+    yield { type: "swap", indices: [0, i] };
+    yield { type: "sorted", indices: [i] };
+    yield* heapify(i, 0);
+  }
+  yield { type: "sorted", indices: [0] };
+  yield { type: "done" };
+}
+
+const GENERATORS = {
+  bubble: bubbleSort, selection: selectionSort, insertion: insertionSort,
+  merge: mergeSort, quick: quickSort, heap: heapSort
+};
+
+</script>
+<script>
+/* ---------------------------------------------------------
+   SOUND ENGINE
+   Pitch is mapped from bar value -> frequency. Compare, swap,
+   and completion each get a distinct timbre so you can tell
+   them apart by ear, not just by sight.
+--------------------------------------------------------- */
+let audioCtx = null;
+let masterGain = null;
+let soundEnabled = true;
+
+function initAudio() {
+  if (audioCtx) return;
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC) { soundEnabled = false; return; }
+  audioCtx = new AC();
+  masterGain = audioCtx.createGain();
+  masterGain.gain.value = Number(volumeRange.value) / 100;
+  masterGain.connect(audioCtx.destination);
+}
+
+function resumeAudio() {
+  if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
+}
+
+function panForIndex(i) {
+  if (array.length <= 1) return 0;
+  return (i / (array.length - 1)) * 1.6 - 0.8; // keep off the hard edges
+}
+
+function playTone(value, opts) {
+  if (!soundEnabled) return;
+  initAudio();
+  if (!audioCtx) return;
+  resumeAudio();
+
+  const { type = "sine", duration = 0.07, gain = 0.5, pan = 0 } = opts || {};
+  const freq = 110 + (Math.min(Math.max(value, 0), maxValueForPitch) / maxValueForPitch) * 780;
+
+  const osc = audioCtx.createOscillator();
+  const gainNode = audioCtx.createGain();
+  const hasPanner = typeof audioCtx.createStereoPanner === "function";
+  const panner = hasPanner ? audioCtx.createStereoPanner() : null;
+
+  osc.type = type;
+  osc.frequency.value = freq;
+
+  const now = audioCtx.currentTime;
+  gainNode.gain.setValueAtTime(0.0001, now);
+  gainNode.gain.linearRampToValueAtTime(gain, now + 0.006);
+  gainNode.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+  osc.connect(gainNode);
+  if (panner) {
+    panner.pan.value = Math.max(-1, Math.min(1, pan));
+    gainNode.connect(panner);
+    panner.connect(masterGain);
+  } else {
+    gainNode.connect(masterGain);
+  }
+
+  osc.start(now);
+  osc.stop(now + duration + 0.03);
+}
+
+function playCompareSound(indices) {
+  indices.forEach((i) => {
+    if (array[i] === undefined) return;
+    playTone(array[i], { type: "sine", duration: 0.055, gain: 0.35, pan: panForIndex(i) });
+  });
+}
+
+function playSwapSound(indices) {
+  indices.forEach((i) => {
+    if (array[i] === undefined) return;
+    playTone(array[i], { type: "triangle", duration: 0.09, gain: 0.55, pan: panForIndex(i) });
+  });
+}
+
+function playPivotSound(index) {
+  if (array[index] === undefined) return;
+  playTone(array[index], { type: "sawtooth", duration: 0.1, gain: 0.3, pan: panForIndex(index) });
+}
+
+function playDoneChime() {
+  if (!soundEnabled) return;
+  initAudio();
+  if (!audioCtx) return;
+  resumeAudio();
+  const notes = [440, 554.37, 659.25, 880]; // A major-ish rising chime
+  notes.forEach((freq, idx) => {
+    const osc = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+    osc.type = "sine";
+    osc.frequency.value = freq;
+    const now = audioCtx.currentTime + idx * 0.09;
+    gainNode.gain.setValueAtTime(0.0001, now);
+    gainNode.gain.linearRampToValueAtTime(0.4, now + 0.01);
+    gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.25);
+    osc.connect(gainNode);
+    gainNode.connect(masterGain);
+    osc.start(now);
+    osc.stop(now + 0.3);
+  });
+}
+
+</script>
+<script>
+/* ---------------------------------------------------------
+   APP STATE + DOM
+--------------------------------------------------------- */
+const chartEl = document.getElementById("chart");
+const algoSelect = document.getElementById("algoSelect");
+const sizeRange = document.getElementById("sizeRange");
+const speedRange = document.getElementById("speedRange");
+const sizeVal = document.getElementById("sizeVal");
+const speedVal = document.getElementById("speedVal");
+const customArrayInput = document.getElementById("customArray");
+const applyCustomBtn = document.getElementById("applyCustomBtn");
+const randomBtn = document.getElementById("randomBtn");
+const startBtn = document.getElementById("startBtn");
+const stepBtn = document.getElementById("stepBtn");
+const pauseBtn = document.getElementById("pauseBtn");
+const resumeBtn = document.getElementById("resumeBtn");
+const resetBtn = document.getElementById("resetBtn");
+const statCompare = document.getElementById("statCompare");
+const statSwap = document.getElementById("statSwap");
+const statTime = document.getElementById("statTime");
+const statSize = document.getElementById("statSize");
+const infoBox = document.getElementById("infoBox");
+const ledEl = document.getElementById("led");
+const statusText = document.getElementById("statusText");
+const soundToggleBtn = document.getElementById("soundToggleBtn");
+const volumeRange = document.getElementById("volumeRange");
+const volumeVal = document.getElementById("volumeVal");
+
+let array = [];
+let bars = [];
+let generator = null;
+let comparisons = 0;
+let swaps = 0;
+let startTime = null;
+let elapsedBeforePause = 0;
+let timerHandle = null;
+let isRunning = false;
+let isPaused = false;
+let sortedIndices = new Set();
+let animHandle = null;
+let maxValueForPitch = 400;
+
+function randomArray(n) {
+  return Array.from({ length: n }, () => Math.floor(Math.random() * 380) + 10);
+}
+
+function renderInfoBox() {
+  const info = ALGO_INFO[algoSelect.value];
+  infoBox.innerHTML = `
+    <h3>${info.name}</h3>
+    <dl class="complexity-grid">
+      <dt>Best</dt><dd>${info.time.best}</dd>
+      <dt>Average</dt><dd>${info.time.avg}</dd>
+      <dt>Worst</dt><dd>${info.time.worst}</dd>
+      <dt>Space</dt><dd>${info.space}</dd>
+    </dl>
+    <p class="desc-text">${info.desc}</p>
+  `;
+}
+
+function buildBars() {
+  chartEl.innerHTML = "";
+  bars = array.map((val) => {
+    const bar = document.createElement("div");
+    bar.className = "bar";
+    bar.style.height = val + "px";
+    chartEl.appendChild(bar);
+    return bar;
+  });
+}
+
+function setStatus(state) {
+  ledEl.className = "led " + state;
+  statusText.textContent = state.toUpperCase();
+}
+
+function updateStats() {
+  statCompare.textContent = comparisons;
+  statSwap.textContent = swaps;
+  statSize.textContent = array.length;
+}
+
+function tickTimer() {
+  const now = performance.now();
+  const total = elapsedBeforePause + (isPaused ? 0 : now - startTime);
+  statTime.textContent = (total / 1000).toFixed(2) + "s";
+}
+
+function startTimer() {
+  startTime = performance.now();
+  if (timerHandle) clearInterval(timerHandle);
+  timerHandle = setInterval(tickTimer, 50);
+}
+
+function stopTimer() {
+  if (timerHandle) clearInterval(timerHandle);
+  timerHandle = null;
+}
+
+function clearHighlights() {
+  bars.forEach((b) => {
+    b.classList.remove("compare", "swap", "pivot");
+  });
+}
+
+function applyStep(step) {
+  clearHighlights();
+  if (step.type === "compare") {
+    comparisons++;
+    step.indices.forEach((i) => bars[i] && bars[i].classList.add("compare"));
+    playCompareSound(step.indices);
+  } else if (step.type === "swap") {
+    swaps++;
+    const [i, j] = step.indices;
+    [array[i], array[j]] = [array[j], array[i]];
+    if (bars[i]) { bars[i].style.height = array[i] + "px"; bars[i].classList.add("swap"); }
+    if (bars[j]) { bars[j].style.height = array[j] + "px"; bars[j].classList.add("swap"); }
+    playSwapSound([i, j]);
+  } else if (step.type === "overwrite") {
+    swaps++;
+    array[step.index] = step.value;
+    if (bars[step.index]) { bars[step.index].style.height = step.value + "px"; bars[step.index].classList.add("swap"); }
+    playSwapSound([step.index]);
+  } else if (step.type === "pivot") {
+    step.indices.forEach((i) => bars[i] && bars[i].classList.add("pivot"));
+    playPivotSound(step.indices[0]);
+  } else if (step.type === "sorted") {
+    step.indices.forEach((i) => {
+      sortedIndices.add(i);
+      if (bars[i]) bars[i].classList.add("sorted");
+    });
+  } else if (step.type === "done") {
+    bars.forEach((b) => b.classList.add("sorted"));
+    playDoneChime();
+    finishRun();
+  }
+  updateStats();
+}
+
+function finishRun() {
+  isRunning = false;
+  isPaused = false;
+  stopTimer();
+  tickTimer();
+  setStatus("idle");
+  toggleButtons();
+}
+
+function toggleButtons() {
+  const active = isRunning && !isPaused;
+  startBtn.disabled = isRunning;
+  stepBtn.disabled = active;
+  pauseBtn.disabled = !active;
+  resumeBtn.disabled = !isRunning || !isPaused;
+  randomBtn.disabled = active;
+  applyCustomBtn.disabled = active;
+  algoSelect.disabled = isRunning;
+  sizeRange.disabled = isRunning;
+}
+
+/* Automatic run loop, paced by speed slider */
+function runLoop() {
+  if (!isRunning || isPaused) return;
+  const speed = Number(speedRange.value); // 1..100
+  const delay = Math.max(1, 220 - speed * 2.1); // higher speed -> lower delay
+
+  const result = generator.next();
+  if (result.done) return;
+  applyStep(result.value);
+
+  animHandle = setTimeout(runLoop, delay);
+}
+
+function ensureGenerator() {
+  if (!generator) {
+    comparisons = 0;
+    swaps = 0;
+    sortedIndices.clear();
+    generator = GENERATORS[algoSelect.value]([...array]);
+  }
+}
+
+function startRun() {
+  if (isRunning) return;
+  ensureGenerator();
+  isRunning = true;
+  isPaused = false;
+  startTimer();
+  setStatus("running");
+  toggleButtons();
+  runLoop();
+}
+
+function stepOnce() {
+  ensureGenerator();
+  if (!isRunning) {
+    isRunning = true;
+    isPaused = true;
+    elapsedBeforePause = elapsedBeforePause || 0;
+    setStatus("paused");
+  }
+  const result = generator.next();
+  if (result.done) return;
+  applyStep(result.value);
+  tickTimer();
+  toggleButtons();
+}
+
+function pauseRun() {
+  if (!isRunning || isPaused) return;
+  isPaused = true;
+  elapsedBeforePause += performance.now() - startTime;
+  clearTimeout(animHandle);
+  stopTimer();
+  setStatus("paused");
+  toggleButtons();
+}
+
+function resumeRun() {
+  if (!isRunning || !isPaused) return;
+  isPaused = false;
+  startTimer();
+  setStatus("running");
+  toggleButtons();
+  runLoop();
+}
+
+function resetAll(newArray) {
+  clearTimeout(animHandle);
+  stopTimer();
+  isRunning = false;
+  isPaused = false;
+  generator = null;
+  comparisons = 0;
+  swaps = 0;
+  elapsedBeforePause = 0;
+  sortedIndices.clear();
+  statTime.textContent = "0.00s";
+  if (newArray) array = newArray;
+  maxValueForPitch = Math.max(...array, 10);
+  buildBars();
+  updateStats();
+  setStatus("idle");
+  toggleButtons();
+}
+
+/* ---------------------------------------------------------
+   EVENT WIRING
+--------------------------------------------------------- */
+sizeRange.addEventListener("input", () => {
+  sizeVal.textContent = sizeRange.value;
+});
+sizeRange.addEventListener("change", () => {
+  resetAll(randomArray(Number(sizeRange.value)));
+});
+
+speedRange.addEventListener("input", () => {
+  speedVal.textContent = speedRange.value;
+});
+
+algoSelect.addEventListener("change", () => {
+  renderInfoBox();
+  resetAll();
+});
+
+randomBtn.addEventListener("click", () => {
+  resetAll(randomArray(Number(sizeRange.value)));
+});
+
+applyCustomBtn.addEventListener("click", () => {
+  const raw = customArrayInput.value.trim();
+  if (!raw) return;
+  const parsed = raw.split(",").map((s) => parseInt(s.trim(), 10)).filter((n) => !isNaN(n) && n > 0);
+  if (parsed.length < 2) {
+    alert("Enter at least two positive integers, comma-separated.");
+    return;
+  }
+  sizeRange.value = parsed.length;
+  sizeVal.textContent = parsed.length;
+  resetAll(parsed);
+});
+
+startBtn.addEventListener("click", startRun);
+stepBtn.addEventListener("click", stepOnce);
+pauseBtn.addEventListener("click", pauseRun);
+resumeBtn.addEventListener("click", resumeRun);
+resetBtn.addEventListener("click", () => resetAll(randomArray(Number(sizeRange.value))));
+
+soundToggleBtn.addEventListener("click", () => {
+  soundEnabled = !soundEnabled;
+  soundToggleBtn.textContent = "Sound: " + (soundEnabled ? "On" : "Off");
+  soundToggleBtn.classList.toggle("primary", soundEnabled);
+  if (soundEnabled) { initAudio(); resumeAudio(); }
+});
+
+volumeRange.addEventListener("input", () => {
+  volumeVal.textContent = volumeRange.value;
+  if (masterGain) masterGain.gain.value = Number(volumeRange.value) / 100;
+});
+
+/* ---------------------------------------------------------
+   INIT
+--------------------------------------------------------- */
+renderInfoBox();
+resetAll(randomArray(Number(sizeRange.value)));
+
+// See morse-station.html for why this stays hidden inside the Siteseeing
+// viewfinder's iframe and only reveals itself when opened standalone.
+if (window.self === window.top) {
+  const backLink = document.querySelector('.back-to-portfolio');
+  if (backLink) backLink.style.display = 'inline-block';
+}
+
+</script>
+</body>
+</html>
