@@ -272,6 +272,12 @@ function initMountain(){
     const gradientEl = document.getElementById('scrollGradient');
     const circumference = 150.8;
     let summitCelebrated = false;
+    // Queried fresh on every scroll tick before - cache once instead.
+    const layerMountains = document.getElementById('layerMountains');
+    const layerRidges = document.getElementById('layerRidges');
+    const layerMist = document.getElementById('layerMist');
+    const layerGlow = document.getElementById('layerGlow');
+    const backBtn = document.getElementById('backTop');
 
     function getActiveCampIndex() {
       const viewportHeight = window.innerHeight;
@@ -345,17 +351,12 @@ function initMountain(){
         }
       }
 
-      const backBtn = document.getElementById('backTop');
       if (scrollTop > 400) {
         backBtn.classList.add('visible');
       } else {
         backBtn.classList.remove('visible');
       }
 
-      const layerMountains = document.getElementById('layerMountains');
-      const layerRidges = document.getElementById('layerRidges');
-      const layerMist = document.getElementById('layerMist');
-      const layerGlow = document.getElementById('layerGlow');
       if (layerMountains) {
         const offset = scrollTop * 0.08;
         layerMountains.style.transform = `translateY(${offset}px) scale(1.02)`;
@@ -378,12 +379,29 @@ function initMountain(){
       updateActiveCamp();
     }
 
-    peakScroll.addEventListener('scroll', updateProgress, { passive: true });
-    window.addEventListener('resize', updateProgress, { passive: true });
+    // The scroll handler above repaints a full-viewport gradient, reads
+    // layout for every skill camp, and updates several elements - fine
+    // once per rendered frame, but the native 'scroll' event on mobile can
+    // fire far more often than the screen actually redraws (especially
+    // during momentum scrolling), so it was running that whole expensive
+    // update dozens of times per frame. That flood of repaints is what
+    // showed up as the screen flashing black while scrolling. Coalescing
+    // it to at most once per animation frame fixes it at the source.
+    let peakScrollTicking = false;
+    function onPeakScroll() {
+      if (peakScrollTicking) return;
+      peakScrollTicking = true;
+      requestAnimationFrame(() => {
+        updateProgress();
+        peakScrollTicking = false;
+      });
+    }
+    peakScroll.addEventListener('scroll', onPeakScroll, { passive: true });
+    window.addEventListener('resize', onPeakScroll, { passive: true });
     setTimeout(updateProgress, 50);
 
     // ── back to top ──
-    document.getElementById('backTop').addEventListener('click', () => {
+    backBtn.addEventListener('click', () => {
       peakScroll.scrollTo({ top: 0, behavior: 'smooth' });
     });
 
