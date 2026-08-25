@@ -79,7 +79,7 @@
     const wrap = document.getElementById('lhStars');
     if (!wrap || wrap.childElementCount) return;
     const frag = document.createDocumentFragment();
-    const count = reduceMotion ? 40 : 70;
+    const count = reduceMotion ? 40 : (PERF_MODE ? 35 : 70);
     for (let i = 0; i < count; i++) {
       const s = document.createElement('div');
       s.className = 'lh-star';

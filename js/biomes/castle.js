@@ -412,7 +412,7 @@ function wireBestiaryLore(g) {
 function spawnEmbers() {
   castleEmbers = [];
   const layer = document.getElementById('csEmbers');
-  const count = 24;
+  const count = PERF_MODE ? 10 : 24;
   for (let i = 0; i < count; i++) {
     const el = document.createElement('div');
     const big = Math.random() < 0.3;

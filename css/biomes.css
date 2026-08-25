@@ -5216,3 +5216,42 @@
   .swamp-scene.gm-shake{ animation:none !important; }
   .gm-exp-tile:hover{ transform:none; }
 }
+
+/* ==========================================================================
+   PERFORMANCE MODE (mobile / low-power phones)
+   Toggled by js/biome-data.js as html.perf-mode - only ever on touch-primary
+   devices that are narrow-viewport or low-core-count, so this never touches
+   a desktop/laptop (mouse/trackpad) session. Nothing here hides content or
+   sections; it only lightens the two GPU-cost properties that are cheap on
+   a handful of desktop elements but add up fast across dozens of phone-GPU
+   composited/painted layers: backdrop-filter (full compositing blur pass)
+   and animated box-shadow (a repaint, not a compositor job, on every frame).
+   ========================================================================== */
+html.perf-mode {
+  /* Frosted-glass panels: keep the same translucent tint, drop the blur
+     pass behind them. Panels already use high-enough background opacity
+     (.6-.95) to stay legible without it. */
+  * {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  /* Moon glow / string-light bulbs: swap the animated box-shadow (a full
+     repaint per element per frame) for a cheaper opacity pulse - same
+     "breathing light" read, compositor-only cost. */
+  .layer-sky .moon {
+    animation: perfMoonGlow 6s ease-in-out infinite alternate;
+  }
+  .string-lights .bulb {
+    animation: perfBulbFlicker var(--dur, 2.4s) ease-in-out infinite alternate;
+  }
+}
+@keyframes perfMoonGlow {
+  0%   { opacity: .65; }
+  100% { opacity: .85; }
+}
+@keyframes perfBulbFlicker {
+  0%   { opacity: .6; transform: scale(.92); }
+  40%  { opacity: 1;  transform: scale(1.04); }
+  100% { opacity: .75; transform: scale(.97); }
+}

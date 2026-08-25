@@ -134,7 +134,11 @@ function ssBuildClouds(){
   // Speeds are real px/second driven straight off the clock every frame in
   // ssAmbientTick - not a CSS animation - so motion can never silently fail
   // to show regardless of animation timing quirks.
-  const layers = [
+  const layers = PERF_MODE ? [
+    { count: 2, size: [50, 78],  top: [6, 20],  speed: [16, 24], far: true  },
+    { count: 1, size: [86, 128], top: [14, 34], speed: [30, 44], far: false },
+    { count: 1, size: [140, 200],top: [22, 42], speed: [55, 78], far: false },
+  ] : [
     { count: 3, size: [50, 78],  top: [6, 20],  speed: [16, 24], far: true  },
     { count: 3, size: [86, 128], top: [14, 34], speed: [30, 44], far: false },
     { count: 3, size: [140, 200],top: [22, 42], speed: [55, 78], far: false },
@@ -237,7 +241,7 @@ function ssSpawnDust(){
   ssDustMotes = [];
   const layer = document.getElementById('ssDustLayer');
   if (!layer) return;
-  for (let i = 0; i < 24; i++) {
+  for (let i = 0; i < (PERF_MODE ? 12 : 24); i++) {
     const el = document.createElement('div');
     el.className = 'ss-dust';
     const size = 3 + Math.random() * 4;
@@ -319,9 +323,9 @@ function ssStartAmbient(){
   setTimeout(ssSpawnBalloon, 1800);
   setTimeout(ssSpawnEphemera, 2600);
 
-  ssBirdTimer = setInterval(() => { if (Math.random() < 0.7) ssSpawnBird(); }, 3200);
-  ssBalloonTimer = setInterval(() => { if (Math.random() < 0.5) ssSpawnBalloon(); }, 14000);
-  ssEphemeraTimer = setInterval(() => { if (Math.random() < 0.55) ssSpawnEphemera(); }, 8000);
+  ssBirdTimer = setInterval(() => { if (Math.random() < 0.7) ssSpawnBird(); }, PERF_MODE ? 5200 : 3200);
+  ssBalloonTimer = setInterval(() => { if (Math.random() < 0.5) ssSpawnBalloon(); }, PERF_MODE ? 20000 : 14000);
+  ssEphemeraTimer = setInterval(() => { if (Math.random() < 0.55) ssSpawnEphemera(); }, PERF_MODE ? 13000 : 8000);
 }
 
 function ssStopAmbient(){

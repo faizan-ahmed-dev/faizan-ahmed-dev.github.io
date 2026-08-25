@@ -167,7 +167,7 @@
         const ctx = canvas.getContext('2d');
         let dir = 1;
         const colors = ['#7cff9e','#00e5ff','#ff2e88','#ffe066'];
-        const N = 90;
+        const N = PERF_MODE ? 40 : 90;
         const particles = Array.from({length:N}, () => {
           const r = 2.5 + Math.random()*8;
           return {
@@ -225,7 +225,7 @@
 
             ctx.beginPath();
             ctx.fillStyle = p.c;
-            ctx.shadowColor = p.c; ctx.shadowBlur = 7;
+            if (!PERF_MODE) { ctx.shadowColor = p.c; ctx.shadowBlur = 7; }
             ctx.arc(p.x + wobble*0.3, p.y + wobble, p.r, 0, Math.PI*2);
             ctx.fill();
           });

@@ -288,11 +288,14 @@ function initVillage(){
             // ── Resize canvas ──
             function resizeCanvas() {
                 const rect = wrap.getBoundingClientRect();
-                canvas.width = rect.width * devicePixelRatio;
-                canvas.height = rect.height * devicePixelRatio;
+                // Capped via PERF_DPR: on a DPR-3 phone this is a 9x smaller
+                // backing store than raw devicePixelRatio would give us,
+                // which is most of the fireflies-canvas cost on mobile.
+                canvas.width = rect.width * PERF_DPR;
+                canvas.height = rect.height * PERF_DPR;
                 canvas.style.width = rect.width + 'px';
                 canvas.style.height = rect.height + 'px';
-                ctx.scale(devicePixelRatio, devicePixelRatio);
+                ctx.scale(PERF_DPR, PERF_DPR);
             }
             resizeCanvas();
             window.addEventListener('resize', resizeCanvas);
@@ -300,7 +303,7 @@ function initVillage(){
             // ── Stars ──
             (function createStars() {
                 const container = document.getElementById('starsContainer');
-                for (let i = 0; i < 40; i++) {
+                for (let i = 0; i < (PERF_MODE ? 15 : 40); i++) {
                     const s = document.createElement('div');
                     s.className = 'star';
                     s.style.left = (Math.random() * 96 + 2) + '%';
@@ -560,7 +563,7 @@ function initVillage(){
             // FIREFLIES - Canvas Particle System
             // ─────────────────────────────────────────────
             let fireflies = [];
-            const NUM_FIREFLIES = 18;
+            const NUM_FIREFLIES = PERF_MODE ? 8 : 18;
             let mouseX = -9999,
                 mouseY = -9999;
             let isMouseOnCanvas = false;
@@ -607,6 +610,22 @@ function initVillage(){
                 draw(ctx) {
                     const alpha = (0.4 + this.life * 0.5) * this.glow;
                     const r = this.size;
+                    // createRadialGradient() + shadowBlur are both re-created/
+                    // re-rasterized every frame for every firefly - fine for a
+                    // handful on desktop, expensive at 60fps on a phone GPU.
+                    // Perf mode swaps the gradient halo for a flat translucent
+                    // fill and drops the shadow blur; still glows, just cheaper.
+                    if (PERF_MODE) {
+                        ctx.fillStyle = `rgba(255, 195, 90, ${alpha * 0.35})`;
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, r * 2.2, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.fillStyle = `rgba(255, 240, 200, ${alpha * 0.9})`;
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, r * 0.6, 0, Math.PI * 2);
+                        ctx.fill();
+                        return;
+                    }
                     const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, r * 4);
                     grad.addColorStop(0, `rgba(255, 210, 120, ${alpha * 0.9})`);
                     grad.addColorStop(0.3, `rgba(255, 190, 80, ${alpha * 0.5})`);

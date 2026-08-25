@@ -133,7 +133,7 @@
 
     // ── particles ──
     const particleLayer = document.getElementById('peakParticles');
-    const pCount = 100;
+    const pCount = PERF_MODE ? 35 : 100;
     for (let i = 0; i < pCount; i++) {
       const el = document.createElement('div');
       el.className = 'peak-particle';
@@ -190,9 +190,10 @@
       return data;
     }
 
-    for (let i = 0; i < 10; i++) {
+    const MOUNTAIN_CLOUD_COUNT = PERF_MODE ? 5 : 10;
+    for (let i = 0; i < MOUNTAIN_CLOUD_COUNT; i++) {
       const c = createCloud();
-      c.x = -c.width - Math.random() * 300 + (i / 10) * window.innerWidth * 0.8;
+      c.x = -c.width - Math.random() * 300 + (i / MOUNTAIN_CLOUD_COUNT) * window.innerWidth * 0.8;
       c.el.style.left = c.x + 'px';
       clouds.push(c);
     }
@@ -386,7 +387,7 @@
       const colors = ['#f4e9cf', '#ffd97a', '#ff9d42', '#dfe8ff', '#9fc7e8', '#7cff9e', '#f5d78a', '#ff6b6b', '#ffb15c',
         '#a78bfa', '#34d399'
       ];
-      const count = 220;
+      const count = PERF_MODE ? 90 : 220;
       for (let i = 0; i < count; i++) {
         const angle = Math.random() * Math.PI * 2;
         const speed = 2.5 + Math.random() * 9;
@@ -432,16 +433,19 @@
         alive = true;
         ctx.globalAlpha = p.life;
         ctx.fillStyle = p.color;
-        ctx.shadowColor = p.color;
-        ctx.shadowBlur = 16;
+        if (!PERF_MODE) { ctx.shadowColor = p.color; ctx.shadowBlur = 16; }
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size * (0.3 + 0.7 * p.life), 0, Math.PI * 2);
         ctx.fill();
-        ctx.globalAlpha = p.life * 0.3;
-        ctx.shadowBlur = 6;
-        ctx.beginPath();
-        ctx.arc(p.x - p.vx * 2, p.y - p.vy * 2, p.size * 0.4 * p.life, 0, Math.PI * 2);
-        ctx.fill();
+        // The trailing "afterimage" dot is a nice-to-have blur echo; skip it
+        // in perf mode rather than doing a second shadowed draw per particle.
+        if (!PERF_MODE) {
+          ctx.globalAlpha = p.life * 0.3;
+          ctx.shadowBlur = 6;
+          ctx.beginPath();
+          ctx.arc(p.x - p.vx * 2, p.y - p.vy * 2, p.size * 0.4 * p.life, 0, Math.PI * 2);
+          ctx.fill();
+        }
       });
       ctx.globalAlpha = 1;
       ctx.shadowBlur = 0;

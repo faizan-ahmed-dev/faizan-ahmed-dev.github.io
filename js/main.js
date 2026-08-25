@@ -1,6 +1,7 @@
 // ---------- STARS ----------
 const starsEl = document.getElementById('stars');
-for (let i = 0; i < 120; i++) {
+const STAR_COUNT = PERF_MODE ? 45 : 120;
+for (let i = 0; i < STAR_COUNT; i++) {
   const s = document.createElement('div');
   s.className = 'star' + (Math.random() < 0.12 ? ' big' : '');
   s.style.left = Math.random() * 100 + '%';
@@ -14,7 +15,7 @@ for (let i = 0; i < 120; i++) {
 const shootLayer = document.getElementById('shootingStars');
 
 function spawnShootingStar() {
-  if (reduceMotion) return;
+  if (reduceMotion || PERF_MODE) return;
   const s = document.createElement('div');
   s.className = 'shooting-star';
   s.style.left = (20 + Math.random() * 50) + '%';
@@ -28,7 +29,8 @@ setTimeout(spawnShootingStar, 2500);
 
 // ---------- CLOUDS ----------
 const cloudLayer = document.getElementById('cloudLayer');
-for (let i = 0; i < 5; i++) {
+const CLOUD_COUNT = PERF_MODE ? 2 : 5;
+for (let i = 0; i < CLOUD_COUNT; i++) {
   const c = document.createElement('div');
   c.className = 'cloud';
   const size = 40 + Math.random() * 50;
@@ -81,11 +83,14 @@ function spawnFlyer(kind) {
 setInterval(() => {
   if (Math.random() < 0.5) {
     spawnFlyer('bird');
-    if (Math.random() < 0.3) setTimeout(() => spawnFlyer('bird'), 300 + Math.random() * 500);
+    // The occasional second bird right behind the first is a nice touch on
+    // desktop, but it's extra concurrent DOM/SVG animation for no real
+    // visual gain on a small phone screen - skip it in perf mode.
+    if (!PERF_MODE && Math.random() < 0.3) setTimeout(() => spawnFlyer('bird'), 300 + Math.random() * 500);
   }
-}, 6000);
+}, PERF_MODE ? 11000 : 6000);
 setTimeout(() => spawnFlyer('bird'), 1200);
-setInterval(() => { if (Math.random() < 0.4) spawnFlyer('owl'); }, 26000);
+setInterval(() => { if (Math.random() < 0.4) spawnFlyer('owl'); }, PERF_MODE ? 40000 : 26000);
 setTimeout(() => spawnFlyer('owl'), 11000);
 
 // ---------- TREELINE ----------
@@ -177,8 +182,15 @@ function spawnFor(zone) {
     phase: Math.random() * Math.PI * 2
   });
 }
-setInterval(() => { zones.forEach(z => { if (Math.random() < 0.9) spawnFor(z); }); }, 220);
+// Spawn less often and cap the concurrent particle count in perf mode - the
+// canvas redraw cost below scales directly with how many particles are
+// alive at once, so this is the highest-leverage knob for phones.
+const PARTICLE_SPAWN_MS = PERF_MODE ? 480 : 220;
+const PARTICLE_SPAWN_CHANCE = PERF_MODE ? 0.55 : 0.9;
+const MAX_PARTICLES = PERF_MODE ? 90 : Infinity;
+setInterval(() => { zones.forEach(z => { if (particles.length < MAX_PARTICLES && Math.random() < PARTICLE_SPAWN_CHANCE) spawnFor(z); }); }, PARTICLE_SPAWN_MS);
 setInterval(() => {
+  if (particles.length >= MAX_PARTICLES) return;
   particles.push({
     x: Math.random() * window.innerWidth,
     y: window.innerHeight * 0.9 + Math.random() * window.innerHeight * 0.1,
@@ -191,7 +203,12 @@ setInterval(() => {
     type: 'dust',
     phase: Math.random() * Math.PI * 2
   });
-}, 600);
+}, PERF_MODE ? 1400 : 600);
+
+// ctx.shadowBlur is one of the most expensive canvas operations on mobile
+// GPUs (it's a full blur pass per shape, per frame). Firefly/ember glow
+// still reads fine as a solid dot without it, so drop it in perf mode.
+const PARTICLE_GLOW = !PERF_MODE;
 
 function tick() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -204,12 +221,12 @@ function tick() {
     const alpha = p.type === 'mist' ? 0.10 * (1 - lifeRatio) : (p.type === 'smoke' ? 0.22 * (1 - lifeRatio) : 0.9 * Math.sin(Math.PI * lifeRatio));
     ctx.beginPath();
     if (p.type === 'firefly') {
-      ctx.shadowBlur = 8;
+      ctx.shadowBlur = PARTICLE_GLOW ? 8 : 0;
       ctx.shadowColor = `rgba(${p.color},0.9)`;
       ctx.fillStyle = `rgba(${p.color},${Math.max(alpha, 0)})`;
       ctx.arc(p.x, p.y, p.r, 0, 7);
     } else if (p.type === 'ember') {
-      ctx.shadowBlur = 6;
+      ctx.shadowBlur = PARTICLE_GLOW ? 6 : 0;
       ctx.shadowColor = `rgba(${p.color},0.8)`;
       ctx.fillStyle = `rgba(${p.color},${Math.max(alpha, 0)})`;
       ctx.arc(p.x, p.y, p.r, 0, 7);
@@ -218,7 +235,7 @@ function tick() {
       ctx.fillStyle = `rgba(${p.color},${Math.max(alpha, 0)})`;
       ctx.arc(p.x, p.y, p.r, 0, 7);
     } else {
-      ctx.shadowBlur = 2;
+      ctx.shadowBlur = PARTICLE_GLOW ? 2 : 0;
       ctx.shadowColor = 'rgba(255,255,255,.5)';
       ctx.fillStyle = `rgba(${p.color},${Math.max(alpha * 0.6, 0)})`;
       ctx.arc(p.x, p.y, p.r, 0, 7);
@@ -255,7 +272,7 @@ window.addEventListener('resize', resizeBurst);
 
 function fireBurst(x, y, colorRgb) {
   const bits = [];
-  const n = reduceMotion ? 0 : 30;
+  const n = reduceMotion ? 0 : (PERF_MODE ? 12 : 30);
   for (let i = 0; i < n; i++) {
     const ang = Math.random() * Math.PI * 2,
       spd = 1 + Math.random() * 3.8;
