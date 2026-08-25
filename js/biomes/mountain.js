@@ -1,4 +1,17 @@
-(function(){
+function initMountain(){
+    // Every other biome only builds its scene and starts its ambient
+    // animation loop the first time the user actually travels there
+    // (see initCastle/initVillage/initLighthouse/initGlitchmire etc).
+    // This file used to be the one exception: it was a self-invoking
+    // function that ran at page-load time regardless of whether the
+    // visitor ever opened Mastery Peak, which meant its cloud-drift
+    // requestAnimationFrame loop (and everything else below) was running
+    // in the background on every single screen of the site, forever.
+    // That's what made this biome uniquely laggy compared to the others.
+    // Wrapping it in initMountain() + this guard makes it lazy like
+    // everything else - nothing here runs until the peak is visited.
+    if (window.__mountainInitialized) return;
+    window.__mountainInitialized = true;
 
     // ── data ──
     const PEAK_CAMPS = [{
@@ -485,6 +498,6 @@
       updateProgress();
     }, 150);
 
-  
-})();
+}
+window.initMountain = initMountain;
   

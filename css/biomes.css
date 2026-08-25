@@ -47,11 +47,15 @@
   .biome-label{
     margin-top:6px; font-family:'Cinzel',serif; font-size:13px; letter-spacing:.12em;
     color:var(--parchment); text-shadow:0 2px 6px rgba(0,0,0,.8);
-    opacity:0;transform:translateY(4px);
+    /* Visible from first load (not just on hover) - a first-time visitor
+       can't tell a decorative sprite from a clickable landmark otherwise.
+       The short description stays in .biome-tooltip below, which is still
+       hover-only, so labels don't get lost. Kept the transition so it can
+       still animate in with the marker's own entrance without a hard cut. */
+    opacity:1; transform:translateY(0);
     transition:opacity .25s ease, transform .25s ease;
     white-space:nowrap; display:flex;align-items:center;gap:6px;
   }
-  .biome-marker:hover .biome-label, .biome-marker:focus-visible .biome-label{opacity:1;transform:translateY(0);}
   .visited-star{ color:var(--gold-bright); font-size:11px; }
 
   /* short per-biome hover blurb - small enough to not compete with the
@@ -77,6 +81,26 @@
   .biome-marker[data-id="swamp"]{ --tip-shift-x: 26px; }
   @media (hover: none){
     .biome-tooltip{ display:none; } /* no hover on touch - tap still travels normally */
+  }
+  /* ---- TOUCH AFFORDANCE ----
+     Every visual cue that these are tappable (the name label, the glow,
+     the pulse ring) was gated behind :hover/:focus-visible, which never
+     fires on a touch device - so on mobile these landmarks looked like
+     bare, static decoration with no indication they do anything. Give
+     touch users a persistent, gentler version of the same cues instead,
+     plus a larger invisible tap target so they're easier to hit. */
+  @media (hover: none) and (pointer: coarse){
+    /* padding (not margin) grows the tap target - transform:translate(-50%,-50%)
+       always re-centers on the current box size, so padding alone keeps the
+       visual icon exactly where it was while enlarging the hit area around it. */
+    .biome-marker{ padding:16px; }
+    .biome-marker .glow{ opacity:.38; }
+    .biome-marker .ring{ animation:pulseRing 2.8s ease-out infinite; }
+    /* slightly stronger shadow than the global label style, for legibility
+       over the busier motion behind it on a small screen */
+    .biome-marker .biome-label{
+      text-shadow:0 2px 6px rgba(0,0,0,.9), 0 0 10px rgba(0,0,0,.7);
+    }
   }
   @keyframes idlebob{ 0%,100%{transform:translateY(0);} 50%{transform:translateY(-6px);} }
 
@@ -1739,6 +1763,15 @@
     .featured-card{ width:72px; height:56px; flex-shrink:0; }
     .fc-label{ font-size:8.5px; padding:4px 6px; }
     .biome-label{ font-size:10px; }
+    /* Reposition two landmarks that collide with other mobile-only UI at
+       this breakpoint: "Site Seeing" (left:70%/top:24% on desktop) sits
+       right in the featured-work strip's band once that strip reflows to
+       full-width at top:108px on phones, and "The Glitchmire"
+       (left:6%/top:86%) lands almost exactly on top of the bottom-left
+       compass button. Neither collision exists on desktop, so only moved
+       here. !important is needed to beat the inline left/top on the marker. */
+    .biome-marker[data-id="siteseeing"]{ left:76% !important; top:36% !important; }
+    .biome-marker[data-id="swamp"]{ left:14% !important; top:78% !important; }
     .biome-marker .icon-wrap svg{ width:46px; height:auto; }
     .panel-card{ padding:36px 26px; max-width:88vw; }
     .panel-card h2{ font-size:21px; }
@@ -5110,7 +5143,7 @@
 }
 
 /* generic stage helpers reused by multiple experiments */
-.gm-stage-canvas{ position:absolute; inset:0; width:100%; height:100%; display:block; cursor:crosshair; }
+.gm-stage-canvas{ position:absolute; inset:0; width:100%; height:100%; display:block; cursor:crosshair; touch-action:none; }
 .gm-stage-hint{
   position:absolute; top:12px; left:14px; z-index:2; font-size:11px; color:#8fd6a8;
   background:rgba(0,0,0,.4); padding:6px 10px; border-radius:4px; letter-spacing:.03em; pointer-events:none;
@@ -5128,7 +5161,7 @@
 .gm-stage-ascii{
   position:absolute; inset:0; margin:0; padding:10px; overflow:hidden;
   font-family:'Share Tech Mono', monospace; font-size:7px; line-height:7px; letter-spacing:0;
-  color:var(--gm-green); background:#020402; white-space:pre;
+  color:var(--gm-green); background:#020402; white-space:pre; touch-action:none;
 }
 
 /* terminal experiment */
@@ -5171,7 +5204,7 @@
 @keyframes gmPortalSpin{ from{ transform:rotate(0deg) scale(1); } to{ transform:rotate(360deg) scale(1); } }
 
 /* blade mode */
-.gm-blade-area{ position:absolute; inset:0; padding:20px; }
+.gm-blade-area{ position:absolute; inset:0; padding:20px; touch-action:none; }
 .gm-blade-chip{
   position:absolute; background:rgba(124,255,158,.12); border:1px solid rgba(124,255,158,.4);
   color:#eafff0; font-size:11px; padding:8px 12px; border-radius:4px; user-select:none;

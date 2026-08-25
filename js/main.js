@@ -368,6 +368,7 @@ function travelTo(m) {
       panel.classList.add('show');
       visited.add(id);
       refreshProgress();
+      if (window.initMountain) window.initMountain();
     } else if (id === 'village') {
       panel.classList.add('village-mode');
       panel.classList.remove('castle-mode');
@@ -492,6 +493,7 @@ function openRouteDirect(id, item) {
   } else if (id === 'mountain') {
     panel.classList.add('peak-mode', 'show');
     visited.add(id); refreshProgress();
+    if (window.initMountain) window.initMountain();
   } else if (id === 'village') {
     panel.classList.add('village-mode', 'show');
     visited.add(id); refreshProgress(); initVillage();
