@@ -55,6 +55,11 @@
     opacity:1; transform:translateY(0);
     transition:opacity .25s ease, transform .25s ease;
     white-space:nowrap; display:flex;align-items:center;gap:6px;
+    /* Flat solid background (no blur/backdrop-filter - cheap), since with
+       every label on-screen at once now, a couple of markers sit close
+       enough that their labels can pass behind each other; this keeps
+       whichever one is on top legible instead of both blurring together. */
+    background:rgba(6,4,12,.55); padding:2px 8px; border-radius:5px;
   }
   .visited-star{ color:var(--gold-bright); font-size:11px; }
 
@@ -83,19 +88,21 @@
     .biome-tooltip{ display:none; } /* no hover on touch - tap still travels normally */
   }
   /* ---- TOUCH AFFORDANCE ----
-     Every visual cue that these are tappable (the name label, the glow,
-     the pulse ring) was gated behind :hover/:focus-visible, which never
-     fires on a touch device - so on mobile these landmarks looked like
-     bare, static decoration with no indication they do anything. Give
-     touch users a persistent, gentler version of the same cues instead,
-     plus a larger invisible tap target so they're easier to hit. */
+     The name label being always-visible (see .biome-label above) is now
+     the primary "this is tappable" cue on every device, so touch doesn't
+     need its own extra affordance layer. It used to also get a permanent
+     blurred glow (filter:blur, expensive to composite) and an infinite
+     pulsing ring on all 7 markers at once - that was real, continuous
+     GPU load stacked on top of everything else running on the map
+     screen, and is what caused the flickering/glitching right when
+     tapping something (the travel transition's own burst of work landed
+     on top of an already-strained render budget). Keeping only the
+     larger tap target, which is layout-only and effectively free. */
   @media (hover: none) and (pointer: coarse){
     /* padding (not margin) grows the tap target - transform:translate(-50%,-50%)
        always re-centers on the current box size, so padding alone keeps the
        visual icon exactly where it was while enlarging the hit area around it. */
     .biome-marker{ padding:16px; }
-    .biome-marker .glow{ opacity:.38; }
-    .biome-marker .ring{ animation:pulseRing 2.8s ease-out infinite; }
     /* slightly stronger shadow than the global label style, for legibility
        over the busier motion behind it on a small screen */
     .biome-marker .biome-label{
@@ -1763,6 +1770,14 @@
     .featured-card{ width:72px; height:56px; flex-shrink:0; }
     .fc-label{ font-size:8.5px; padding:4px 6px; }
     .biome-label{ font-size:10px; }
+    /* With every label visible at once, "Castle of Games" and "Farpoint
+       Lighthouse" sit close enough on phones that their nowrap text
+       collides (visible in testing). Let labels wrap to two short lines
+       here - narrower per-label footprint - and nudge these two markers
+       slightly further apart so there's real clearance either way. */
+    .biome-label{ white-space:normal; max-width:92px; text-align:center; line-height:1.25; }
+    .biome-marker[data-id="castle"]{ left:56% !important; }
+    .biome-marker[data-id="lighthouse"]{ left:83% !important; }
     /* Reposition two landmarks that collide with other mobile-only UI at
        this breakpoint: "Site Seeing" (left:70%/top:24% on desktop) sits
        right in the featured-work strip's band once that strip reflows to

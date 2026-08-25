@@ -13,6 +13,18 @@ function initMountain(){
     if (window.__mountainInitialized) return;
     window.__mountainInitialized = true;
 
+    // Everything below builds a fair amount of DOM at once (skill camps,
+    // ~35-100 particle divs, several cloud elements) and starts the cloud
+    // rAF loop. Doing all of that synchronously in the same tick as the
+    // travel transition's own zoom/wipe/panel-open animation is what
+    // caused Mastery Peak specifically to glitch on open - the browser
+    // had to build all this DOM in the exact frame it was also trying to
+    // start those CSS transitions. Deferring one frame lets the panel-open
+    // transition begin cleanly first; the heavy build then happens right
+    // after, while the panel is still animating in, where it's not
+    // competing for the same frame.
+    requestAnimationFrame(() => {
+
     // ── data ──
     const PEAK_CAMPS = [{
       name: 'Languages',
@@ -497,6 +509,8 @@ function initMountain(){
       });
       updateProgress();
     }, 150);
+
+    }); // end deferred requestAnimationFrame
 
 }
 window.initMountain = initMountain;
