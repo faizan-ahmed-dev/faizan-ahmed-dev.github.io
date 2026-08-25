@@ -351,7 +351,18 @@
   
       /* Dynamic background gradient */
       .scroll-gradient {
-        position: fixed;
+        /* Was position:fixed. .peak-scene is itself a nested scrolling
+           container (overflow-y:auto), not the real page - and fixed-
+           position elements *inside* a nested scroll container are
+           notoriously unreliable on mobile browsers: they can detach,
+           clip, or flash out during scroll instead of staying calmly
+           pinned. absolute (with .peak-scene, which is itself
+           position:absolute, as the containing block) achieves the exact
+           same "stays put while content scrolls" visual result, but
+           reliably, because it doesn't depend on that mobile-buggy
+           fixed-in-nested-scroller behavior. Same fix applied to every
+           other position:fixed element inside .peak-scene below. */
+        position: absolute;
         top: 0;
         left: 0;
         width: 100%;
@@ -364,7 +375,7 @@
   
       /* Parallax layers */
       .parallax-bg {
-        position: fixed;
+        position: absolute; /* was fixed - see .scroll-gradient note above */
         top: 0;
         left: 0;
         width: 100%;
@@ -420,7 +431,7 @@
   
       /* ── floating particles ── */
       #peakParticles {
-        position: fixed;
+        position: absolute; /* was fixed - see .scroll-gradient note above */
         inset: 0;
         pointer-events: none;
         z-index: 1;
@@ -452,7 +463,7 @@
   
       /* ── Cloud layer (JS-driven) ── */
       .cloud-layer {
-        position: fixed;
+        position: absolute; /* was fixed - see .scroll-gradient note above */
         top: 0;
         left: 0;
         width: 100%;
@@ -527,7 +538,7 @@
   
       /* ── progress ring (fixed, bottom-left) ── */
       .peak-progress {
-        position: fixed;
+        position: absolute; /* was fixed - see .scroll-gradient note above; this is also the "stays put while content underneath moves and overlaps" element that was reported */
         bottom: 30px;
         left: 30px;
         z-index: 100;
@@ -1125,7 +1136,7 @@
   
       /* ── back to top ── */
       .back-top {
-        position: fixed;
+        position: absolute; /* was fixed - see .scroll-gradient note above; this is also the "stays put while content underneath moves and overlaps" element that was reported */
         bottom: 30px;
         right: 30px;
         z-index: 90;
@@ -1164,7 +1175,7 @@
   
       /* ── summit celebration canvas ── */
       #summitCelebration {
-        position: fixed;
+        position: absolute; /* was fixed - see .scroll-gradient note above */
         inset: 0;
         z-index: 80;
         pointer-events: none;
