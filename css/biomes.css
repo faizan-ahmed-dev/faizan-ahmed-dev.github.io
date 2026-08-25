@@ -5295,6 +5295,13 @@ html.perf-mode {
     -webkit-backdrop-filter: none !important;
   }
 
+  /* A couple of Mastery Peak panels leaned on that blur more than most
+     (.85 and .8 opacity, meant to be backed by a 16px blur) - without it
+     they let a faint "ghost" of the scrolling content underneath show
+     through. Bump them closer to opaque here to compensate. */
+  .peak-topbar { background: rgba(8, 11, 20, .97) !important; }
+  .peak-progress { background: rgba(8, 11, 20, .95) !important; }
+
   /* Moon glow / string-light bulbs: swap the animated box-shadow (a full
      repaint per element per frame) for a cheaper opacity pulse - same
      "breathing light" read, compositor-only cost. */
