@@ -270,7 +270,7 @@
     clip-path:circle(0% at 50% 50%);
   }
   #transitionOverlay.wipe{ transition:clip-path .85s cubic-bezier(.6,0,.2,1); clip-path:circle(150% at var(--ox) var(--oy)); }
-  #burst{ position:fixed; inset:0; z-index:150; pointer-events:none; }
+
 
   /* ---------- DESTINATION PANEL ---------- */
   #destPanel{

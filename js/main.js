@@ -262,54 +262,12 @@ function refreshProgress() {
 }
 
 // ---------- BURST ----------
-const burstCanvas = document.getElementById('burst');
-const bctx = burstCanvas.getContext('2d');
-
-function resizeBurst() { burstCanvas.width = window.innerWidth;
-  burstCanvas.height = window.innerHeight; }
-resizeBurst();
-window.addEventListener('resize', resizeBurst);
-
-function fireBurst(x, y, colorRgb) {
-  const bits = [];
-  const n = reduceMotion ? 0 : (PERF_MODE ? 12 : 30);
-  for (let i = 0; i < n; i++) {
-    const ang = Math.random() * Math.PI * 2,
-      spd = 1 + Math.random() * 3.8;
-    bits.push({ x, y, vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd, life: 0, maxLife: 40 + Math.random() * 30, r: 1 + Math.random() * 2.4 });
-  }
-
-  function step() {
-    bctx.clearRect(0, 0, burstCanvas.width, burstCanvas.height);
-    let alive = false;
-    bits.forEach(b => {
-      if (b.life >= b.maxLife) return;
-      alive = true;
-      b.life++;
-      b.x += b.vx;
-      b.y += b.vy;
-      b.vy += 0.03;
-      b.vx *= 0.985;
-      b.vy *= 0.985;
-      const a = 1 - (b.life / b.maxLife);
-      bctx.beginPath();
-      bctx.fillStyle = `rgba(${colorRgb},${a})`;
-      bctx.shadowBlur = 6;
-      bctx.shadowColor = `rgba(${colorRgb},.8)`;
-      bctx.arc(b.x, b.y, b.r, 0, 7);
-      bctx.fill();
-    });
-    if (alive) requestAnimationFrame(step);
-    else bctx.clearRect(0, 0, burstCanvas.width, burstCanvas.height);
-  }
-  step();
-}
-
-function hexToRgb(hex) {
-  const v = hex.replace('#', '');
-  const n = parseInt(v.length === 3 ? v.split('').map(c => c + c).join('') : v, 16);
-  return `${(n >> 16) & 255},${(n >> 8) & 255},${n & 255}`;
-}
+// The particle burst that used to fire from the tapped marker when opening
+// a biome was removed on request - it was an extra canvas animation
+// stacked right at the start of the travel transition (which already does
+// a scale/blur/wipe), and was flagged as both unwanted and a mobile
+// performance cost. hexToRgb() existed only to feed it a color, so it's
+// gone too.
 
 // ---------- TRAVEL ----------
 const world = document.getElementById('world');
@@ -331,8 +289,6 @@ function travelTo(m) {
   overlay.style.setProperty('--ox', ox + 'px');
   overlay.style.setProperty('--oy', oy + 'px');
   overlay.style.setProperty('--tint', tint);
-
-  fireBurst(ox, oy, hexToRgb(m.dataset.color || '#ffffff'));
 
   const scaleX = (ox / window.innerWidth - 0.5) * -0.6;
   const scaleY = (oy / window.innerHeight - 0.5) * -0.6;
