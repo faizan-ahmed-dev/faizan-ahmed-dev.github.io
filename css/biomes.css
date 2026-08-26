@@ -380,12 +380,7 @@
         z-index: 0;
         pointer-events: none;
         transition: none;
-        /* No will-change here on purpose: `background` isn't a compositable
-           property, so will-change:background doesn't get this onto the GPU -
-           it just forces the browser to keep a standing paint-promoted layer
-           for a full-viewport element that JS already repaints on every
-           scroll tick, which is pure overhead stacked on top of an already
-           expensive per-frame repaint. */
+        will-change: background;
       }
   
       /* Parallax layers */
@@ -504,25 +499,8 @@
   
       /* ── top bar ── */
       .peak-topbar {
-        /* Every other pinned overlay in this scene (.scroll-gradient,
-           .parallax-bg, #peakParticles, .cloud-layer, .peak-progress,
-           .back-top, #summitCelebration) is position:absolute against
-           .peak-scene rather than position:fixed/sticky, specifically
-           because .peak-scene is itself the scrolling container - see the
-           .scroll-gradient comment. This was the one element still using
-           position:sticky, and unlike the others it would intermittently
-           let card content underneath paint over it mid-scroll (sticky
-           elements are re-anchored by the browser on every scroll frame,
-           which is extra per-frame work the plain-absolute elements never
-           need and where this was going wrong). Matching the same
-           position:absolute; top:0 pattern as everything else pins it
-           just as reliably at the top and removes that per-frame
-           re-anchoring step entirely. */
-        position: absolute;
+        position: sticky;
         top: 0;
-        left: 0;
-        width: 100%;
-        box-sizing: border-box;
         z-index: 20;
         display: flex;
         align-items: center;
@@ -684,12 +662,7 @@
         transform: translateY(50px) scale(0.95);
         transition: opacity 0.9s cubic-bezier(0.2, 0.9, 0.3, 1.2),
           transform 0.9s cubic-bezier(0.2, 0.9, 0.3, 1.2);
-        /* will-change is applied in JS only for the ~0.9s this actually
-           transitions, then removed - see mountain.js. Six cards each
-           holding a permanent will-change is six standing GPU layers for
-           content that (after that one reveal) never changes again; on a
-           phone GPU that's compositing budget better spent on the parts of
-           the scene that animate continuously (particles, clouds). */
+        will-change: transform, opacity;
       }
       .peak-camp.visible {
         opacity: 1;
@@ -1200,18 +1173,6 @@
         transform: translateY(0) scale(1);
         pointer-events: auto;
       }
-      /* Applied by mountain.js whenever a card/heading is currently
-         scrolling directly behind this badge - see updateBadgeCollisions.
-         Dims rather than hides outright so it doesn't itself become a
-         "content flickering in and out" distraction; pointer-events stay
-         off while dimmed so a half-see-through button can't be tapped by
-         mistake. */
-      .peak-progress.badge-dim,
-      .back-top.badge-dim {
-        opacity: 0.22;
-        pointer-events: none;
-        transition: opacity 0.2s ease;
-      }
       .back-top:hover {
         background: rgba(244, 233, 207, 0.12);
         border-color: rgba(238, 244, 251, 0.35);
@@ -1242,31 +1203,6 @@
           margin-left: auto;
           margin-right: auto;
           width: 92%;
-        }
-        /* On desktop the trail marker sits in the gap beside an
-           off-center card. This media query re-centers every card
-           (above), which means that gap no longer exists - the marker's
-           left:50%/top:20px was landing squarely on top of each card's
-           heading, chopping out a circular bite of the title text. Moving
-           it to sit just above the card, in the margin between one camp
-           and the next, keeps it as a trail waypoint without ever
-           overlapping card content. */
-        .pc-marker {
-          top: 0;
-          transform: translate(-50%, -100%) translateY(-14px);
-        }
-        .peak-camp.visible .pc-marker {
-          transform: translate(-50%, -100%) translateY(-14px) scale(1.2);
-        }
-        .peak-camp.active-camp .pc-marker {
-          transform: translate(-50%, -100%) translateY(-14px) scale(1.4);
-        }
-        @keyframes markerBreatheMobile {
-          0%, 100% { transform: translate(-50%, -100%) translateY(-14px) scale(1.4); }
-          50% { transform: translate(-50%, -100%) translateY(-14px) scale(1.55); }
-        }
-        .peak-camp.active-camp .pc-marker {
-          animation: markerBreatheMobile 2.2s ease-in-out infinite;
         }
         .peak-topbar {
           padding: 14px 18px;

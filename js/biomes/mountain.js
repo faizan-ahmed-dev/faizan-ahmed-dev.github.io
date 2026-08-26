@@ -25,23 +25,6 @@ function initMountain(){
     // competing for the same frame.
     requestAnimationFrame(() => {
 
-    // .peak-topbar used to be position:sticky, which stays in normal flow
-    // and so naturally pushed .peak-trail down below it. It's now
-    // position:absolute (see the CSS comment on .peak-topbar for why),
-    // which takes it out of flow entirely - so .peak-trail needs an
-    // explicit top padding reserving the same space, or the intro content
-    // would start underneath the topbar and be hidden behind it at the
-    // top of the scroll. Measured at runtime (rather than hardcoded)
-    // since the topbar's height changes across the mobile breakpoint.
-    function syncTrailTopOffset() {
-      const topbar = document.querySelector('.peak-topbar');
-      const trail = document.getElementById('peakTrail');
-      if (!topbar || !trail) return;
-      trail.style.paddingTop = (topbar.getBoundingClientRect().height + 20) + 'px';
-    }
-    syncTrailTopOffset();
-    window.addEventListener('resize', syncTrailTopOffset, { passive: true });
-
     // ── data ──
     const PEAK_CAMPS = [{
       name: 'Languages',
@@ -196,17 +179,6 @@ function initMountain(){
     const cloudLayer = document.getElementById('peakCloudLayer');
     const clouds = [];
 
-    // Clouds are positioned with `top` (a %) set exactly once at creation -
-    // baseline placement only, never touched again. All per-frame movement
-    // (drift + bob) is applied purely through `transform: translate3d(...)`
-    // on top of that baseline. The previous version rewrote `el.style.left`
-    // (px) and `el.style.top` (%) on every single rAF tick for every cloud -
-    // both are layout-affecting properties on an absolutely positioned
-    // element, so the browser was doing a full synchronous layout pass,
-    // every frame, for every cloud, competing with the main thread during
-    // scroll. transform-only movement is compositor-only: no layout, no
-    // paint, just a GPU-cheap re-position - this was the single biggest
-    // contributor to Mastery Peak's mobile jank.
     function createCloud() {
       const el = document.createElement('div');
       el.className = 'cloud-obj';
@@ -230,10 +202,10 @@ function initMountain(){
 
       const speed = 0.15 + Math.random() * 0.35;
       const startX = -w - Math.random() * 200;
-      el.style.left = '0px'; // fixed baseline; x-drift happens via transform
       const data = {
         el,
         x: startX,
+        y: parseFloat(el.style.top),
         speed: speed,
         width: w,
         height: h,
@@ -247,7 +219,7 @@ function initMountain(){
     for (let i = 0; i < MOUNTAIN_CLOUD_COUNT; i++) {
       const c = createCloud();
       c.x = -c.width - Math.random() * 300 + (i / MOUNTAIN_CLOUD_COUNT) * window.innerWidth * 0.8;
-      c.el.style.transform = `translate3d(${c.x}px, 0, 0)`;
+      c.el.style.left = c.x + 'px';
       clouds.push(c);
     }
 
@@ -256,13 +228,15 @@ function initMountain(){
       clouds.forEach(c => {
         c.x += c.speed * speedFactor;
         c.phase += 0.005;
-        const bob = Math.sin(c.phase) * 8; // px, was a % of element height via top
+        const bob = Math.sin(c.phase) * 2;
         if (c.x > window.innerWidth + c.width + 50) {
           c.x = -c.width - 50 - Math.random() * 200;
           c.el.style.top = (5 + Math.random() * 85) + '%';
+          c.y = parseFloat(c.el.style.top);
           c.speed = 0.15 + Math.random() * 0.35;
         }
-        c.el.style.transform = `translate3d(${c.x}px, ${bob}px, 0)`;
+        c.el.style.left = c.x + 'px';
+        c.el.style.top = (c.y + bob) + '%';
         const opacity = 0.12 + 0.18 * (0.5 + 0.5 * Math.sin(c.phase * 0.5 + c.x * 0.001));
         c.el.style.opacity = opacity;
       });
@@ -276,25 +250,13 @@ function initMountain(){
     const summitEl = document.getElementById('peakSummit');
     const climbingEl = document.getElementById('peakClimbing');
 
-    // will-change is added right before the reveal transition starts and
-    // stripped once it ends, instead of sitting on every card permanently
-    // in CSS - see the .peak-camp comment for why.
-    function revealWithWillChange(el, isSummit) {
-      el.style.willChange = 'transform, opacity';
-      el.classList.add('visible');
-      if (isSummit) el.classList.add('summit-reached');
-      const clear = () => { el.style.willChange = 'auto'; };
-      el.addEventListener('transitionend', clear, { once: true });
-      // Safety net: if a transitionend never fires (e.g. element already
-      // matched prefers-reduced-motion's 0.001s duration), don't leave
-      // will-change stuck on indefinitely.
-      setTimeout(clear, 1200);
-    }
-
     const visibilityObserver = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
-          revealWithWillChange(entry.target, entry.target.id === 'peakSummit');
+          entry.target.classList.add('visible');
+          if (entry.target.id === 'peakSummit') {
+            entry.target.classList.add('summit-reached');
+          }
         }
       });
     }, { threshold: 0.1 });
@@ -341,34 +303,6 @@ function initMountain(){
       campElements.forEach((c, i) => {
         c.classList.toggle('active-camp', i === idx);
       });
-    }
-
-    // The progress ring and back-to-top button are pinned to fixed corners
-    // of the screen, but the trail content scrolls freely underneath them
-    // with no reserved gap - so whatever card, badge or heading happens to
-    // pass through a corner at any given scroll position renders right
-    // behind (and gets visually chopped by) that badge. Rather than
-    // reserve permanent dead space in the layout for a collision that only
-    // happens some of the time, fade each badge down whenever real content
-    // is currently under it and bring it back once that content clears.
-    const collisionTargets = [introEl, ...campElements, summitEl, climbingEl].filter(Boolean);
-    function rectsOverlap(a, b) {
-      return a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
-    }
-    function updateBadgeCollisions() {
-      const progressRect = progressWrap.getBoundingClientRect();
-      const backRect = backBtn.getBoundingClientRect();
-      let progressHit = false;
-      let backHit = false;
-      for (const el of collisionTargets) {
-        const r = el.getBoundingClientRect();
-        if (r.bottom < 0 || r.top > window.innerHeight) continue; // not on screen at all
-        if (!progressHit && rectsOverlap(progressRect, r)) progressHit = true;
-        if (!backHit && rectsOverlap(backRect, r)) backHit = true;
-        if (progressHit && backHit) break;
-      }
-      progressWrap.classList.toggle('badge-dim', progressHit);
-      backBtn.classList.toggle('badge-dim', backHit);
     }
 
     function updateProgress() {
@@ -422,8 +356,6 @@ function initMountain(){
       } else {
         backBtn.classList.remove('visible');
       }
-
-      updateBadgeCollisions();
 
       if (layerMountains) {
         const offset = scrollTop * 0.08;
@@ -587,7 +519,10 @@ function initMountain(){
       document.querySelectorAll('.peak-camp, .peak-intro, .peak-summit, .peak-climbing').forEach(el => {
         const rect = el.getBoundingClientRect();
         if (rect.top < window.innerHeight * 0.85) {
-          revealWithWillChange(el, el.id === 'peakSummit');
+          el.classList.add('visible');
+          if (el.id === 'peakSummit') {
+            el.classList.add('summit-reached');
+          }
         }
       });
       updateProgress();
