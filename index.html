@@ -470,27 +470,32 @@
       <span class="progress-label" id="progressLabel">0% <small>summit</small></span>
     </div>
 
-    <!-- trail -->
-    <div class="peak-trail" id="peakTrail">
-      <div class="trail-line-wrap" id="trailLineWrap">
-        <svg viewBox="0 0 40 1000" preserveAspectRatio="none">
-          <defs>
-            <linearGradient id="trailGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#f4e9cf" stop-opacity="0.6" />
-              <stop offset="50%" stop-color="#dfe8ff" stop-opacity="0.3" />
-              <stop offset="100%" stop-color="#f4e9cf" stop-opacity="0.1" />
-            </linearGradient>
-          </defs>
-          <path class="trail-glow" d="M20,20 Q30,120 20,220 Q10,320 20,420 Q30,520 20,620 Q10,720 20,820 Q30,920 20,980" />
-          <path class="trail-path" d="M20,20 Q30,120 20,220 Q10,320 20,420 Q30,520 20,620 Q10,720 20,820 Q30,920 20,980" />
-        </svg>
-      </div>
-
-      <div id="peakContent"></div>
-    </div>
-
     <button class="back-top" id="backTop" aria-label="Back to top">↑</button>
-    <canvas id="summitCelebration"></canvas>
+
+    <!-- Everything above this line stays visually fixed in place, glued to
+         .peak-scene (which no longer scrolls itself). Only this inner
+         wrapper scrolls now - see the .peak-scroll-inner CSS comment for
+         why that split exists. -->
+    <div class="peak-scroll-inner" id="peakScrollInner">
+      <!-- trail -->
+      <div class="peak-trail" id="peakTrail">
+        <div class="trail-line-wrap" id="trailLineWrap">
+          <svg viewBox="0 0 40 1000" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="trailGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#f4e9cf" stop-opacity="0.6" />
+                <stop offset="50%" stop-color="#dfe8ff" stop-opacity="0.3" />
+                <stop offset="100%" stop-color="#f4e9cf" stop-opacity="0.1" />
+              </linearGradient>
+            </defs>
+            <path class="trail-glow" d="M20,20 Q30,120 20,220 Q10,320 20,420 Q30,520 20,620 Q10,720 20,820 Q30,920 20,980" />
+            <path class="trail-path" d="M20,20 Q30,120 20,220 Q10,320 20,420 Q30,520 20,620 Q10,720 20,820 Q30,920 20,980" />
+          </svg>
+        </div>
+
+        <div id="peakContent"></div>
+      </div>
+    </div>
   </div>
 
     <!-- ===== DEVLOG VILLAGE ===== -->
