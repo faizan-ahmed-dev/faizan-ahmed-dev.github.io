@@ -476,6 +476,18 @@ function startCastleAmbient() {
   requestAnimationFrame(castleAmbientTick);
 }
 
+// Called by main.js's closeDest() when leaving the biome entirely. Without
+// this, castleAmbientTick's own rAF chain (embers, game-icon bob, beam
+// sweep, slash flicker - several DOM writes per frame) keeps running
+// forever in the background after the very first Castle visit, since
+// nothing ever flips castleAmbientRunning back to false. startCastleAmbient()
+// already resumes it correctly on the next visit (its guard only blocks
+// re-starting an already-running loop), so this only needs to stop it.
+function stopCastleAmbient() {
+  castleAmbientRunning = false;
+}
+window.__resetCastle = stopCastleAmbient;
+
 // ---------- INIT CASTLE ----------
 function initCastle() {
   const pendingGame = window.__pendingCastleGame;

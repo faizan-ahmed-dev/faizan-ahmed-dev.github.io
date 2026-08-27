@@ -695,6 +695,16 @@ function closeDest() {
   if (window.__resetSiteSeeing) window.__resetSiteSeeing();
   if (window.__resetLighthouse) window.__resetLighthouse();
   if (window.__resetGlitchmire) window.__resetGlitchmire();
+  // Mastery Peak's cloud drift, Castle's ambient tick (embers/beam/icons),
+  // and Village's firefly canvas all used to keep running forever in the
+  // background after the very first visit to each - see the comments next
+  // to their rAF loops. Pausing them here (mirrors the pattern already used
+  // above for Site-Seeing/Lighthouse/Glitchmire) is what actually stops
+  // them; each one resumes itself automatically the next time that biome
+  // is opened.
+  if (window.__resetMountain) window.__resetMountain();
+  if (window.__resetCastle) window.__resetCastle();
+  if (window.__pauseVillageFireflies) window.__pauseVillageFireflies();
   overlay.classList.remove('wipe');
   overlay.style.clipPath = '';
   world.classList.remove('zooming');

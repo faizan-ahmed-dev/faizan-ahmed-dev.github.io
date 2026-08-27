@@ -10,7 +10,10 @@ function initMountain(){
     // That's what made this biome uniquely laggy compared to the others.
     // Wrapping it in initMountain() + this guard makes it lazy like
     // everything else - nothing here runs until the peak is visited.
-    if (window.__mountainInitialized) return;
+    if (window.__mountainInitialized) {
+      if (window.__resumeMountain) window.__resumeMountain();
+      return;
+    }
     window.__mountainInitialized = true;
 
     // Everything below builds a fair amount of DOM at once (skill camps,
@@ -254,7 +257,17 @@ function initMountain(){
       clouds.push(c);
     }
 
+    // Nothing ever stopped this loop once started, so it kept running in
+    // the background for the rest of the session after the very first
+    // Mastery Peak visit - even after navigating back to the map or into a
+    // different biome entirely. That's the same class of bug the file-level
+    // comment above describes for the old self-invoking version, just
+    // reintroduced at the level of this one inner loop. mountainCloudsActive
+    // lets closeDest() pause it and lets re-opening the peak resume the
+    // exact same rAF chain instead of leaving a permanent, invisible cost.
+    let mountainCloudsActive = true;
     function animateClouds() {
+      if (!mountainCloudsActive) return;
       const speedFactor = 1;
       clouds.forEach(c => {
         c.x += c.speed * speedFactor;
@@ -272,6 +285,17 @@ function initMountain(){
       requestAnimationFrame(animateClouds);
     }
     animateClouds();
+
+    // Exposed so closeDest() (main.js) can pause the loop when the visitor
+    // leaves Mastery Peak, and so travelTo() can resume the same loop -
+    // rather than rebuilding all the DOM again - the next time they open it.
+    window.__pauseMountain = function() { mountainCloudsActive = false; };
+    window.__resumeMountain = function() {
+      if (mountainCloudsActive) return;
+      mountainCloudsActive = true;
+      requestAnimationFrame(animateClouds);
+    };
+    window.__resetMountain = window.__pauseMountain;
 
     // ── IntersectionObserver for visibility ──
     const campElements = document.querySelectorAll('.peak-camp');

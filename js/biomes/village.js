@@ -1,6 +1,7 @@
 let villageInitialized = false;
 function initVillage(){
   if (villageInitialized) {
+    if (window.__resumeVillageFireflies) window.__resumeVillageFireflies();
     if (window.__pendingVillageHouse && window.__villageOpenDevlog) {
       const key = window.__pendingVillageHouse;
       window.__pendingVillageHouse = null;
@@ -659,7 +660,16 @@ function initVillage(){
             }
             initFireflies();
 
+            // Same issue as Mastery Peak's cloud loop and Castle's ambient
+            // tick: nothing ever stopped this, so once Village was opened
+            // the first time it kept calling getBoundingClientRect() (a
+            // forced layout read) and redrawing the canvas every single
+            // frame for the rest of the session, even after navigating away.
+            // fireflyLoopActive lets closeDest() pause it and lets
+            // reopening Village resume the same loop.
+            let fireflyLoopActive = true;
             function drawFireflies(time) {
+                if (!fireflyLoopActive) return;
                 const rect = wrap.getBoundingClientRect();
                 const w = rect.width;
                 const h = rect.height;
@@ -671,6 +681,13 @@ function initVillage(){
                 requestAnimationFrame(drawFireflies);
             }
             requestAnimationFrame(drawFireflies);
+
+            window.__pauseVillageFireflies = function() { fireflyLoopActive = false; };
+            window.__resumeVillageFireflies = function() {
+                if (fireflyLoopActive) return;
+                fireflyLoopActive = true;
+                requestAnimationFrame(drawFireflies);
+            };
 
             wrap.addEventListener('mousemove', (e) => {
                 const rect = wrap.getBoundingClientRect();
