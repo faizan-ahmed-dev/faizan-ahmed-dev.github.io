@@ -164,6 +164,16 @@ function resize() { canvas.width = window.innerWidth;
 resize();
 window.addEventListener('resize', resize);
 
+// This canvas sits inside #scene inside #world, so it's swept up in the
+// scale(2.4) transform on every single travel transition - and its
+// clearRect+redraw loop below never stopped, even while a destination
+// panel was fully covering it (or mid-transition, competing with the
+// zoom/wipe animation for the exact same frame budget). mapAmbientActive
+// lets travelTo()/closeDest() pause this for the entire time any biome is
+// open, not just during the transition itself, and resume it the moment
+// the visitor is back looking at the map.
+let mapAmbientActive = true;
+
 let particles = [];
 
 function spawnFor(zone) {
@@ -188,8 +198,12 @@ function spawnFor(zone) {
 const PARTICLE_SPAWN_MS = PERF_MODE ? 480 : 220;
 const PARTICLE_SPAWN_CHANCE = PERF_MODE ? 0.55 : 0.9;
 const MAX_PARTICLES = PERF_MODE ? 90 : Infinity;
-setInterval(() => { zones.forEach(z => { if (particles.length < MAX_PARTICLES && Math.random() < PARTICLE_SPAWN_CHANCE) spawnFor(z); }); }, PARTICLE_SPAWN_MS);
 setInterval(() => {
+  if (!mapAmbientActive) return;
+  zones.forEach(z => { if (particles.length < MAX_PARTICLES && Math.random() < PARTICLE_SPAWN_CHANCE) spawnFor(z); });
+}, PARTICLE_SPAWN_MS);
+setInterval(() => {
+  if (!mapAmbientActive) return;
   if (particles.length >= MAX_PARTICLES) return;
   particles.push({
     x: Math.random() * window.innerWidth,
@@ -211,8 +225,10 @@ setInterval(() => {
 const PARTICLE_GLOW = !PERF_MODE;
 
 function tick() {
+  if (!mapAmbientActive) return;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   particles.forEach(p => {
+
     p.life++;
     p.phase += 0.02;
     p.x += p.vx + Math.sin(p.phase) * 0.15;
@@ -246,6 +262,13 @@ function tick() {
   requestAnimationFrame(tick);
 }
 tick();
+
+window.__pauseMapAmbient = function() { mapAmbientActive = false; };
+window.__resumeMapAmbient = function() {
+  if (mapAmbientActive) return;
+  mapAmbientActive = true;
+  requestAnimationFrame(tick);
+};
 
 // ---------- PROGRESS DOTS ----------
 const visited = new Set();
@@ -282,6 +305,15 @@ let traveling = false;
 function travelTo(m) {
   if (traveling) return;
   traveling = true;
+  // Pause the map's ambient particle canvas the moment a travel starts,
+  // not just once the destination panel is fully open - it sits inside
+  // #world and gets swept up in the scale(2.4) transform below, so its
+  // continuous clearRect+redraw was directly competing with the zoom/wipe
+  // animation for the same frame budget on every single biome tap. It
+  // also has no reason to keep rendering once the destination panel is
+  // covering it, so this stays paused for the whole visit, not just the
+  // transition - see __resumeMapAmbient in closeDest().
+  if (window.__pauseMapAmbient) window.__pauseMapAmbient();
   const rect = m.getBoundingClientRect();
   const ox = rect.left + rect.width / 2,
     oy = rect.top + rect.height / 2;
@@ -714,6 +746,10 @@ function closeDest() {
   if (window.__resetMountain) window.__resetMountain();
   if (window.__resetCastle) window.__resetCastle();
   if (window.__pauseVillageFireflies) window.__pauseVillageFireflies();
+  // Resume the map's ambient particle canvas now that the visitor is back
+  // looking at the map - see the comment in travelTo() for why it was
+  // paused for the whole visit rather than just the transition.
+  if (window.__resumeMapAmbient) window.__resumeMapAmbient();
   overlay.classList.remove('wipe');
   overlay.style.clipPath = '';
   world.classList.remove('zooming');
