@@ -294,7 +294,16 @@ function travelTo(m) {
   const scaleY = (oy / window.innerHeight - 0.5) * -0.6;
   world.classList.add('zooming');
   world.style.transform = `scale(2.4) translate(${scaleX * 60}px, ${scaleY * 60}px)`;
-  world.style.filter = 'brightness(1.6)';
+  // filter is not compositor-only like transform - animating it forces the
+  // browser to repaint #world (the full 100vw x 100dvh map scene) on every
+  // frame of this .85s transition, for every single biome tap. On mobile
+  // GPUs that's expensive enough to make the whole travel transition feel
+  // slow, independent of which biome is being opened. Desktop keeps the
+  // brightness flash; mobile skips it and gets the same zoom/wipe using
+  // only cheap compositor-only properties.
+  if (!PERF_MODE) {
+    world.style.filter = 'brightness(1.6)';
+  }
 
   requestAnimationFrame(() => { overlay.classList.add('wipe'); });
 

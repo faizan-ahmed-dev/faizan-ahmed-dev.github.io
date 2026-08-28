@@ -47,6 +47,11 @@
     height:100dvh; /* accounts for mobile browser chrome (address/tab bars) so bottom markers never clip */
   }
   #world.zooming{ transition:transform .85s cubic-bezier(.6,0,.15,1), filter .85s ease; }
+  /* Mobile skips animating filter on #world entirely (see travelTo() in
+     js/main.js) - dropping it from the transition list too means there's
+     nothing left for the browser to even consider repainting for on this
+     property during the zoom, on top of JS never changing its value there. */
+  html.perf-mode #world.zooming{ transition:transform .85s cubic-bezier(.6,0,.15,1); }
 
   #scene{
     position:absolute;inset:0;

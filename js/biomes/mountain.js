@@ -328,6 +328,16 @@ function initMountain(){
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           revealWithWillChange(entry.target, entry.target.id === 'peakSummit');
+          // The observer used to keep watching every card for the entire
+          // life of the scene. On mobile, momentum-scroll rubber-banding
+          // near the 10%-visible threshold made a card cross it back and
+          // forth several times in a row - each crossing re-ran this,
+          // re-promoting/demoting that card onto its own GPU layer via
+          // will-change over and over in quick succession. That repeated
+          // layer promotion/demotion is what showed up as cards visibly
+          // popping in and out. Each card only ever needs to reveal once,
+          // so stop watching it the moment it has.
+          visibilityObserver.unobserve(entry.target);
         }
       });
     }, { threshold: 0.1 });
