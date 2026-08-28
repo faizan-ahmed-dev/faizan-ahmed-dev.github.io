@@ -5403,6 +5403,20 @@ html.perf-mode {
   .string-lights .bulb {
     animation: perfBulbFlicker var(--dur, 2.4s) ease-in-out infinite alternate;
   }
+  /* Mastery Peak on mobile skips the JS-driven scroll gradient entirely
+     (see the PERF_MODE branch in updateProgress(), js/biomes/mountain.js) -
+     without this, .scroll-gradient would just be empty/transparent for the
+     whole scene on phones since nothing else sets a background on it. This
+     is a fixed mid-tone snapshot of what the desktop version looks like
+     around the midpoint of the scroll, not a moving gradient. */
+  .peak-scene .scroll-gradient {
+    background: linear-gradient(180deg,
+      rgb(40, 34, 41) 0%,
+      rgb(70, 70, 80) 30%,
+      rgb(130, 125, 110) 60%,
+      rgb(200, 195, 170) 100%
+    );
+  }
 }
 @keyframes perfMoonGlow {
   0%   { opacity: .65; }

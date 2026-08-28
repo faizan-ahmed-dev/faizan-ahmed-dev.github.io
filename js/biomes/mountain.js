@@ -180,8 +180,12 @@ function initMountain(){
       `;
 
     // ── particles ──
+    // Full-featured on desktop; skipped entirely on mobile - see the
+    // updateProgress() PERF_MODE branch below for why this scene gets a
+    // structurally simpler mobile path instead of a smaller version of
+    // the same one.
     const particleLayer = document.getElementById('peakParticles');
-    const pCount = PERF_MODE ? 35 : 100;
+    const pCount = PERF_MODE ? 0 : 100;
     for (let i = 0; i < pCount; i++) {
       const el = document.createElement('div');
       el.className = 'peak-particle';
@@ -249,7 +253,7 @@ function initMountain(){
       return data;
     }
 
-    const MOUNTAIN_CLOUD_COUNT = PERF_MODE ? 5 : 10;
+    const MOUNTAIN_CLOUD_COUNT = PERF_MODE ? 0 : 10;
     for (let i = 0; i < MOUNTAIN_CLOUD_COUNT; i++) {
       const c = createCloud();
       c.x = -c.width - Math.random() * 300 + (i / MOUNTAIN_CLOUD_COUNT) * window.innerWidth * 0.8;
@@ -284,7 +288,9 @@ function initMountain(){
       });
       requestAnimationFrame(animateClouds);
     }
-    animateClouds();
+    // MOUNTAIN_CLOUD_COUNT is 0 in PERF_MODE (mobile) - don't even start
+    // this rAF loop when there's nothing in `clouds` for it to move.
+    if (MOUNTAIN_CLOUD_COUNT > 0) animateClouds();
 
     // Exposed so closeDest() (main.js) can pause the loop when the visitor
     // leaves Mastery Peak, and so travelTo() can resume the same loop -
@@ -293,7 +299,7 @@ function initMountain(){
     window.__resumeMountain = function() {
       if (mountainCloudsActive) return;
       mountainCloudsActive = true;
-      requestAnimationFrame(animateClouds);
+      if (MOUNTAIN_CLOUD_COUNT > 0) requestAnimationFrame(animateClouds);
     };
     window.__resetMountain = window.__pauseMountain;
 
@@ -370,6 +376,32 @@ function initMountain(){
       const docHeight = Math.max(1, peakScroll.scrollHeight - peakScroll.clientHeight);
       const pct = Math.min(1, Math.max(0, scrollTop / docHeight));
 
+      // ── MOBILE: minimal path ──
+      // Even after batching reads/writes and throttling (see the comments
+      // that used to be here), this scene was still doing a full-viewport
+      // gradient repaint, 4 parallax transform writes, and ~9
+      // getBoundingClientRect() reads every scroll frame - real cost on a
+      // phone CPU/GPU even when it's not technically "wrong". Rather than
+      // keep shaving that same per-frame work down, phones get a
+      // structurally simpler handler: the progress ring and percentage
+      // still track scroll exactly, but the color-cycling background,
+      // moving parallax layers, and badge-dim/active-camp detection are
+      // dropped entirely rather than computed and throttled. The static
+      // gradient those elements fall back to lives in CSS (html.perf-mode
+      // .scroll-gradient) since this never sets one via JS on mobile.
+      if (PERF_MODE) {
+        ring.style.strokeDashoffset = circumference * (1 - pct);
+        const pctDisplay = Math.round(pct * 100);
+        if (pctDisplay !== lastPctDisplay) {
+          lastPctDisplay = pctDisplay;
+          label.innerHTML = `${pctDisplay}% <small>summit</small>`;
+        }
+        if (scrollTop > 400) backBtn.classList.add('visible');
+        else backBtn.classList.remove('visible');
+        return;
+      }
+
+      // ── DESKTOP: full scene ──
       // ── READ PHASE ──
       // Every getBoundingClientRect() this function needs is gathered here,
       // up front, before any style is written this frame. Previously these
@@ -377,10 +409,7 @@ function initMountain(){
       // *after* label.innerHTML and the gradient background had already
       // been rewritten earlier in the same call - a text/paint write
       // followed by a layout read forces the browser to run a synchronous
-      // layout pass right there, mid-frame. During scroll that ran on
-      // every single frame, competing with the browser's own scroll
-      // compositing - the actual cause of the stutter/pop-in you're
-      // seeing, not a CSS visibility bug. Reading everything first means
+      // layout pass right there, mid-frame. Reading everything first means
       // this always reads the previous, already-settled frame's layout -
       // zero forced synchronous layouts.
       auxFrameCounter++;
