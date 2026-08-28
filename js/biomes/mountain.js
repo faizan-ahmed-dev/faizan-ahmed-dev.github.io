@@ -345,31 +345,6 @@ function initMountain(){
     const layerGlow = document.getElementById('layerGlow');
     const backBtn = document.getElementById('backTop');
 
-    function getActiveCampIndex() {
-      const viewportHeight = window.innerHeight;
-      let bestIdx = -1;
-      let bestDist = Infinity;
-      campElements.forEach((camp, idx) => {
-        const rect = camp.getBoundingClientRect();
-        const campCenter = rect.top + rect.height / 2;
-        const dist = Math.abs(campCenter - viewportHeight / 2);
-        if (rect.bottom > 0 && rect.top < viewportHeight) {
-          if (dist < bestDist) {
-            bestDist = dist;
-            bestIdx = idx;
-          }
-        }
-      });
-      return bestIdx;
-    }
-
-    function updateActiveCamp() {
-      const idx = getActiveCampIndex();
-      if (idx === -1) return;
-      campElements.forEach((c, i) => {
-        c.classList.toggle('active-camp', i === idx);
-      });
-    }
 
     // The progress ring and back-to-top button are pinned to fixed corners
     // of the screen, but the trail content scrolls freely underneath them
@@ -383,59 +358,107 @@ function initMountain(){
     function rectsOverlap(a, b) {
       return a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
     }
-    function updateBadgeCollisions() {
-      const progressRect = progressWrap.getBoundingClientRect();
-      const backRect = backBtn.getBoundingClientRect();
-      let progressHit = false;
-      let backHit = false;
-      for (const el of collisionTargets) {
-        const r = el.getBoundingClientRect();
-        if (r.bottom < 0 || r.top > window.innerHeight) continue; // not on screen at all
-        if (!progressHit && rectsOverlap(progressRect, r)) progressHit = true;
-        if (!backHit && rectsOverlap(backRect, r)) backHit = true;
-        if (progressHit && backHit) break;
-      }
-      progressWrap.classList.toggle('badge-dim', progressHit);
-      backBtn.classList.toggle('badge-dim', backHit);
-    }
+
+    // State for updateProgress()'s read/write batching and throttling -
+    // see the comments inside that function.
+    let auxFrameCounter = 0;
+    let lastPctDisplay = -1;
+    let lastGradientBucket = -1;
 
     function updateProgress() {
       const scrollTop = peakScroll.scrollTop;
       const docHeight = Math.max(1, peakScroll.scrollHeight - peakScroll.clientHeight);
       const pct = Math.min(1, Math.max(0, scrollTop / docHeight));
 
+      // ── READ PHASE ──
+      // Every getBoundingClientRect() this function needs is gathered here,
+      // up front, before any style is written this frame. Previously these
+      // reads (for badge-collision and active-camp detection) happened
+      // *after* label.innerHTML and the gradient background had already
+      // been rewritten earlier in the same call - a text/paint write
+      // followed by a layout read forces the browser to run a synchronous
+      // layout pass right there, mid-frame. During scroll that ran on
+      // every single frame, competing with the browser's own scroll
+      // compositing - the actual cause of the stutter/pop-in you're
+      // seeing, not a CSS visibility bug. Reading everything first means
+      // this always reads the previous, already-settled frame's layout -
+      // zero forced synchronous layouts.
+      auxFrameCounter++;
+      const doAux = (auxFrameCounter % 3 === 0);
+      let activeIdx = -1, progressHit = false, backHit = false;
+      if (doAux) {
+        const viewportHeight = window.innerHeight;
+        let bestDist = Infinity;
+        campElements.forEach((camp, idx) => {
+          const rect = camp.getBoundingClientRect();
+          const campCenter = rect.top + rect.height / 2;
+          const dist = Math.abs(campCenter - viewportHeight / 2);
+          if (rect.bottom > 0 && rect.top < viewportHeight && dist < bestDist) {
+            bestDist = dist;
+            activeIdx = idx;
+          }
+        });
+        const progressRect = progressWrap.getBoundingClientRect();
+        const backRect = backBtn.getBoundingClientRect();
+        for (const el of collisionTargets) {
+          const r = el.getBoundingClientRect();
+          if (r.bottom < 0 || r.top > viewportHeight) continue;
+          if (!progressHit && rectsOverlap(progressRect, r)) progressHit = true;
+          if (!backHit && rectsOverlap(backRect, r)) backHit = true;
+          if (progressHit && backHit) break;
+        }
+      }
+
+      // ── WRITE PHASE ──
       const offset = circumference * (1 - pct);
       ring.style.strokeDashoffset = offset;
-      const pctDisplay = Math.round(pct * 100);
-      label.innerHTML = `${pctDisplay}% <small>summit</small>`;
 
       const hue = 40 - pct * 22;
       const sat = 55 + pct * 25;
       const lig = 65 + pct * 20;
-      ring.style.stroke = `hsl(${hue}, ${sat}%, ${lig}%)`;
+      const ringColor = `hsl(${hue}, ${sat}%, ${lig}%)`;
+      ring.style.stroke = ringColor;
       progressWrap.style.borderColor = `hsla(${hue}, ${sat}%, ${lig}%, 0.25)`;
-      label.style.color = `hsl(${hue}, ${sat}%, ${lig}%)`;
+      label.style.color = ringColor;
 
-      const r1 = 10 + Math.round(60 * pct);
-      const g1 = 14 + Math.round(40 * pct);
-      const b1 = 26 + Math.round(30 * pct);
-      const r2 = 20 + Math.round(100 * pct);
-      const g2 = 30 + Math.round(80 * pct);
-      const b2 = 50 + Math.round(60 * pct);
-      const r3 = 40 + Math.round(180 * pct);
-      const g3 = 50 + Math.round(150 * pct);
-      const b3 = 60 + Math.round(100 * pct);
-      const r4 = 100 + Math.round(200 * pct);
-      const g4 = 120 + Math.round(150 * pct);
-      const b4 = 130 + Math.round(80 * pct);
-      gradientEl.style.background = `
-          linear-gradient(180deg,
-            rgb(${r1},${g1},${b1}) 0%,
-            rgb(${r2},${g2},${b2}) 30%,
-            rgb(${r3},${g3},${b3}) 60%,
-            rgb(${r4},${g4},${b4}) 100%
-          )
-        `;
+      // label.innerHTML is a text-content change, which invalidates layout
+      // (it can resize the pill it sits in) - so only actually write it
+      // when the rounded number on screen would change, instead of on
+      // every frame regardless.
+      const pctDisplay = Math.round(pct * 100);
+      if (pctDisplay !== lastPctDisplay) {
+        lastPctDisplay = pctDisplay;
+        label.innerHTML = `${pctDisplay}% <small>summit</small>`;
+      }
+
+      // Rewriting this full-viewport gradient string was the single
+      // heaviest per-frame paint in this scene - a full-screen repaint,
+      // every animation frame, for the entire time the user scrolls.
+      // Quantizing it to whole percent means the same visual smoothness
+      // (100 steps across the full scroll) for a fraction of the repaints.
+      if (pctDisplay !== lastGradientBucket) {
+        lastGradientBucket = pctDisplay;
+        const r1 = 10 + Math.round(60 * pct);
+        const g1 = 14 + Math.round(40 * pct);
+        const b1 = 26 + Math.round(30 * pct);
+        const r2 = 20 + Math.round(100 * pct);
+        const g2 = 30 + Math.round(80 * pct);
+        const b2 = 50 + Math.round(60 * pct);
+        const r3 = 40 + Math.round(180 * pct);
+        const g3 = 50 + Math.round(150 * pct);
+        const b3 = 60 + Math.round(100 * pct);
+        const r4 = 100 + Math.round(200 * pct);
+        const g4 = 120 + Math.round(150 * pct);
+        const b4 = 130 + Math.round(80 * pct);
+        gradientEl.style.background = `
+            linear-gradient(180deg,
+              rgb(${r1},${g1},${b1}) 0%,
+              rgb(${r2},${g2},${b2}) 30%,
+              rgb(${r3},${g3},${b3}) 60%,
+              rgb(${r4},${g4},${b4}) 100%
+            )
+          `;
+      }
 
       // Confetti/celebration on reaching the summit was removed - this
       // scene already has a lot of simultaneous motion (parallax, clouds,
@@ -449,8 +472,6 @@ function initMountain(){
       } else {
         backBtn.classList.remove('visible');
       }
-
-      updateBadgeCollisions();
 
       if (layerMountains) {
         const offset = scrollTop * 0.08;
@@ -471,8 +492,21 @@ function initMountain(){
         layerGlow.style.transform = `translateY(${offset}px)`;
       }
 
-      updateActiveCamp();
+      // Badge dim + active-camp highlight only use the rects gathered in
+      // the read phase above (throttled to every 3rd frame - ~20 updates/
+      // sec, still visually instant, but a third of the read-layout cost
+      // during scroll).
+      if (doAux) {
+        progressWrap.classList.toggle('badge-dim', progressHit);
+        backBtn.classList.toggle('badge-dim', backHit);
+        if (activeIdx !== -1) {
+          campElements.forEach((c, i) => {
+            c.classList.toggle('active-camp', i === activeIdx);
+          });
+        }
+      }
     }
+
 
     // The scroll handler above repaints a full-viewport gradient, reads
     // layout for every skill camp, and updates several elements - fine
