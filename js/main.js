@@ -341,6 +341,17 @@ function travelTo(m) {
 
   const id = m.dataset.id;
   const info = BIOME_INFO[id] || {};
+  // This used to fire at 780ms while #world/#transitionOverlay's own
+  // transitions run for .85s (850ms) - so building each biome's DOM (camp
+  // cards, listeners, IntersectionObservers, etc.) started 70ms *before*
+  // the zoom/wipe animation had actually finished, blocking the main
+  // thread right during its final, most visible frames. On a fast desktop
+  // CPU that 70ms of init work is imperceptible; on a mobile CPU it can
+  // easily take longer than the 70ms of transition time left, which reads
+  // exactly as "the travel animation itself is laggy" even though the
+  // animation's own properties (transform/opacity/clip-path) were never
+  // the problem - this was. Waiting until just after .85s clears that
+  // overlap entirely, on every biome, every time.
   setTimeout(() => {
     if (id === 'castle') {
       panel.classList.add('castle-mode');
@@ -353,7 +364,12 @@ function travelTo(m) {
       panel.classList.add('show');
       visited.add(id);
       refreshProgress();
-      initCastle();
+      // The panel's own opacity fade-in (.4s, in CSS) starts the instant
+      // 'show' is added above. Deferring the actual DOM-heavy init() one
+      // more frame lets that fade-in get a clean first paint before any
+      // main-thread-blocking construction work begins, instead of both
+      // starting in the same instant.
+      requestAnimationFrame(() => { initCastle(); });
     } else if (id === 'mountain') {
       panel.classList.add('peak-mode');
       panel.classList.remove('castle-mode');
@@ -365,7 +381,7 @@ function travelTo(m) {
       panel.classList.add('show');
       visited.add(id);
       refreshProgress();
-      if (window.initMountain) window.initMountain();
+      requestAnimationFrame(() => { if (window.initMountain) window.initMountain(); });
     } else if (id === 'village') {
       panel.classList.add('village-mode');
       panel.classList.remove('castle-mode');
@@ -377,7 +393,7 @@ function travelTo(m) {
       panel.classList.add('show');
       visited.add(id);
       refreshProgress();
-      initVillage();
+      requestAnimationFrame(() => { initVillage(); });
     } else if (id === 'forest') {
       panel.classList.remove('castle-mode');
       panel.classList.remove('peak-mode');
@@ -400,8 +416,10 @@ function travelTo(m) {
       panel.classList.add('show');
       visited.add(id);
       refreshProgress();
-      initSiteSeeing();
-      if (window.__approachSiteSeeing) window.__approachSiteSeeing();
+      requestAnimationFrame(() => {
+        initSiteSeeing();
+        if (window.__approachSiteSeeing) window.__approachSiteSeeing();
+      });
     } else if (id === 'lighthouse') {
       panel.classList.add('lighthouse-mode');
       panel.classList.remove('castle-mode');
@@ -413,7 +431,7 @@ function travelTo(m) {
       panel.classList.add('show');
       visited.add(id);
       refreshProgress();
-      if (window.initLighthouse) window.initLighthouse();
+      requestAnimationFrame(() => { if (window.initLighthouse) window.initLighthouse(); });
     } else if (id === 'swamp') {
       panel.classList.add('swamp-mode');
       panel.classList.remove('castle-mode');
@@ -425,7 +443,7 @@ function travelTo(m) {
       panel.classList.add('show');
       visited.add(id);
       refreshProgress();
-      if (window.initGlitchmire) window.initGlitchmire();
+      requestAnimationFrame(() => { if (window.initGlitchmire) window.initGlitchmire(); });
     } else {
       panel.classList.remove('castle-mode');
       panel.classList.remove('peak-mode');
@@ -442,8 +460,9 @@ function travelTo(m) {
       refreshProgress();
     }
     setRoute(id);
-  }, 780);
+  }, 860);
 }
+
 
 // ---------- URL ROUTER ----------
 // Gives every biome (and, for Castle/Village, every individual game or

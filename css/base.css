@@ -46,7 +46,15 @@
     height:100vh; /* fallback for browsers without dvh support */
     height:100dvh; /* accounts for mobile browser chrome (address/tab bars) so bottom markers never clip */
   }
-  #world.zooming{ transition:transform .85s cubic-bezier(.6,0,.15,1), filter .85s ease; }
+  #world.zooming{
+    transition:transform .85s cubic-bezier(.6,0,.15,1), filter .85s ease;
+    /* Promotes #world onto its own compositor layer the instant this class
+       is added - i.e. before the scale(2.4) transform value itself
+       actually changes. Without this, the browser can end up creating that
+       layer on the animation's first frame instead, which is extra
+       one-time work landing right at the start of the transition. */
+    will-change: transform;
+  }
   /* Mobile skips animating filter on #world entirely (see travelTo() in
      js/main.js) - dropping it from the transition list too means there's
      nothing left for the browser to even consider repainting for on this
