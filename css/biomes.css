@@ -271,6 +271,22 @@
   }
   #transitionOverlay.wipe{ transition:clip-path .85s cubic-bezier(.6,0,.2,1); clip-path:circle(150% at var(--ox) var(--oy)); }
 
+  /* Mobile's transition (see travelTo() in js/main.js): a plain opacity
+     fade instead of the desktop iris-wipe. clip-path animation isn't
+     reliably hardware-accelerated across mobile browsers the way opacity
+     is - on some it falls back to full-viewport software rasterization
+     every frame, which is a much worse cost than the effect is worth on a
+     phone. This also skips the radial-gradient (both color stops are the
+     same tint anyway, so it's really just a solid fill) in favor of a
+     flat background - one less thing to compute per frame. */
+  html.perf-mode #transitionOverlay{
+    background:var(--tint,#111);
+    clip-path:none;
+    opacity:0;
+    transition:opacity .32s ease;
+  }
+  html.perf-mode #transitionOverlay.wipe-mobile{ opacity:1; }
+
 
   /* ---------- DESTINATION PANEL ---------- */
   #destPanel{
@@ -3299,7 +3315,7 @@
 #destPanel.show.siteseeing-mode .siteseeing-scene{ opacity:1; visibility:visible; pointer-events:auto; }
 #destPanel.show.village-mode .panel-card{ display:none; }
 
-    <style>
+    
         /* ---------- RESET / BASE ---------- */
         *,
         *::before,
@@ -3910,7 +3926,7 @@
             opacity: 1;
         }
         .forest-scene .bookmark-ribbon.progress {
-            /* subtle shift to indicate progress - we'll animate via JS */;
+            /* subtle shift to indicate progress - we'll animate via JS */
         }
         @keyframes forestBookmarkPulse {
             0%   { filter: brightness(1); }

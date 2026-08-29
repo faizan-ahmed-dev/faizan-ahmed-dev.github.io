@@ -322,36 +322,42 @@ function travelTo(m) {
   overlay.style.setProperty('--oy', oy + 'px');
   overlay.style.setProperty('--tint', tint);
 
-  const scaleX = (ox / window.innerWidth - 0.5) * -0.6;
-  const scaleY = (oy / window.innerHeight - 0.5) * -0.6;
-  world.classList.add('zooming');
-  world.style.transform = `scale(2.4) translate(${scaleX * 60}px, ${scaleY * 60}px)`;
-  // filter is not compositor-only like transform - animating it forces the
-  // browser to repaint #world (the full 100vw x 100dvh map scene) on every
-  // frame of this .85s transition, for every single biome tap. On mobile
-  // GPUs that's expensive enough to make the whole travel transition feel
-  // slow, independent of which biome is being opened. Desktop keeps the
-  // brightness flash; mobile skips it and gets the same zoom/wipe using
-  // only cheap compositor-only properties.
-  if (!PERF_MODE) {
+  // Mobile gets a genuinely different, simpler transition rather than a
+  // tuned-down version of the desktop one: no scale transform on #world at
+  // all (was the single biggest remaining per-frame compositing cost - a
+  // 100vw x 100dvh layer full of stars/clouds/markers being continuously
+  // rasterized at 2.4x for .85s on every tap), and a plain opacity fade
+  // instead of an animated clip-path iris-wipe (clip-path animation isn't
+  // reliably hardware-accelerated across mobile browsers the way opacity
+  // and transform are - on some it falls back to full software
+  // rasterization every frame). Desktop is untouched below.
+  let transitionMs;
+  if (PERF_MODE) {
+    transitionMs = 320;
+    requestAnimationFrame(() => { overlay.classList.add('wipe-mobile'); });
+  } else {
+    transitionMs = 850;
+    const scaleX = (ox / window.innerWidth - 0.5) * -0.6;
+    const scaleY = (oy / window.innerHeight - 0.5) * -0.6;
+    world.classList.add('zooming');
+    world.style.transform = `scale(2.4) translate(${scaleX * 60}px, ${scaleY * 60}px)`;
     world.style.filter = 'brightness(1.6)';
+    requestAnimationFrame(() => { overlay.classList.add('wipe'); });
   }
-
-  requestAnimationFrame(() => { overlay.classList.add('wipe'); });
 
   const id = m.dataset.id;
   const info = BIOME_INFO[id] || {};
-  // This used to fire at 780ms while #world/#transitionOverlay's own
-  // transitions run for .85s (850ms) - so building each biome's DOM (camp
-  // cards, listeners, IntersectionObservers, etc.) started 70ms *before*
-  // the zoom/wipe animation had actually finished, blocking the main
-  // thread right during its final, most visible frames. On a fast desktop
-  // CPU that 70ms of init work is imperceptible; on a mobile CPU it can
-  // easily take longer than the 70ms of transition time left, which reads
-  // exactly as "the travel animation itself is laggy" even though the
-  // animation's own properties (transform/opacity/clip-path) were never
-  // the problem - this was. Waiting until just after .85s clears that
-  // overlap entirely, on every biome, every time.
+  // This used to fire at a fixed 780ms while the transition itself ran for
+  // .85s (850ms) - so building each biome's DOM (camp cards, listeners,
+  // IntersectionObservers, etc.) started 70ms *before* the animation had
+  // actually finished, blocking the main thread right during its final,
+  // most visible frames. On a fast desktop CPU that overlap is
+  // imperceptible; on a mobile CPU it can easily take longer than the
+  // time left, which reads exactly as "the travel animation itself is
+  // laggy" even though the animation's own properties were never the
+  // problem - this was. transitionMs + 10 now always waits until just
+  // after whichever transition actually ran (mobile's 320ms fade or
+  // desktop's 850ms zoom/wipe), so there's zero overlap either way.
   setTimeout(() => {
     if (id === 'castle') {
       panel.classList.add('castle-mode');
@@ -460,7 +466,7 @@ function travelTo(m) {
       refreshProgress();
     }
     setRoute(id);
-  }, 860);
+  }, transitionMs + 10);
 }
 
 
@@ -770,6 +776,7 @@ function closeDest() {
   // paused for the whole visit rather than just the transition.
   if (window.__resumeMapAmbient) window.__resumeMapAmbient();
   overlay.classList.remove('wipe');
+  overlay.classList.remove('wipe-mobile');
   overlay.style.clipPath = '';
   world.classList.remove('zooming');
   world.style.transform = 'scale(1) translate(0,0)';
