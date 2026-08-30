@@ -12,6 +12,33 @@
 <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 
+<!-- Open Graph / Twitter: without these, sharing this page's link
+     directly (Slack, LinkedIn, X, etc.) shows a bare URL instead of a
+     preview card, unlike index.html which already has these. -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://faizanahmed.me/overview.html">
+<meta property="og:title" content="Faizan Ahmed | Portfolio Overview">
+<meta property="og:description" content="Faizan Ahmed - B.S. Computer Science student and game developer. Skills, games, software projects, and web projects, on one page.">
+<meta property="og:image" content="https://faizanahmed.me/assets/images/og-preview.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Faizan Ahmed | Portfolio Overview">
+<meta name="twitter:description" content="Faizan Ahmed - B.S. Computer Science student and game developer. Skills, games, software projects, and web projects, on one page.">
+<meta name="twitter:image" content="https://faizanahmed.me/assets/images/og-preview.jpg">
+
+<!-- Google tag (gtag.js) - same property as index.html, so this page's
+     visits show up in the same analytics rather than going untracked.
+     This is the "fast path" a meaningful share of visitors may take, so
+     leaving it untracked would quietly blind you to how much it's used. -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-Y9SX6CSDSR"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-Y9SX6CSDSR');
+</script>
+
 <!-- This page is intentionally its own small, self-contained stylesheet
      rather than reusing the map's CSS/JS - the entire point of it is to be
      the fast, no-exploration path, so it shouldn't cost anything close to
