@@ -76,6 +76,13 @@
   .hero-links a:hover, .hero-links a:focus-visible{ background:var(--gold); color:var(--ink); }
   .hero-links a.primary{ background:var(--gold); color:var(--ink); }
   .hero-links a.primary:hover{ background:var(--gold-bright); }
+  .copy-email-btn{
+    font-family:'Cinzel',serif; font-size:12px; letter-spacing:.1em;
+    padding:10px 18px; border-radius:3px; border:1px solid var(--gold);
+    background:transparent; color:var(--gold); cursor:pointer;
+    transition:background .2s ease, color .2s ease;
+  }
+  .copy-email-btn:hover, .copy-email-btn:focus-visible{ background:var(--gold); color:var(--ink); }
 
   section{ margin-bottom:56px; }
   section > h2{ font-size:22px; letter-spacing:.06em; text-transform:uppercase; margin-bottom:20px; }
@@ -136,11 +143,17 @@
   <header class="hero">
     <h1>Faizan Ahmed</h1>
     <p class="role">B.S. Computer Science student &middot; Game Developer &middot; 3.66 GPA</p>
-    <p>I'm a Computer Science student who likes turning strange ideas into things people actually want to use. My favorite proof of that: <strong>404: Dino Not Found</strong>, a game I built from concept to finish under Pakistan Game Jam 2026's constraints &mdash; it went on to <strong>win the jam by public vote</strong>. Beyond games, I've shipped several full-stack software projects, from desktop apps to database-backed systems, each teaching me something the last one didn't.</p>
+    <p>I'm a Computer Science student who likes turning strange ideas into things people actually want to use. My favorite proof of that: <strong>404: Dino Not Found</strong>, a game I built from concept to finish under Pakistan Game Jam 2026's constraints, and it went on to <strong>win the jam by public vote</strong>. Beyond games, I've shipped several full-stack software projects, from desktop apps to database-backed systems, each teaching me something the last one didn't.</p>
     <p>I'm currently seeking internships, collaborations, and opportunities to work on ambitious projects with people who are passionate about creating exceptional technology.</p>
     <div class="hero-links">
       <a class="primary" href="assets/docs/Faizan_Ahmed_Resume.pdf" download="Faizan_Ahmed_Resume.pdf">Download Résumé</a>
       <a href="mailto:mehunfaizan@gmail.com">Email</a>
+      <!-- mailto: links do nothing if the visitor's browser has no default
+           mail client configured (common on some setups) - this button
+           gives a guaranteed-to-work fallback next to it, matching the
+           copy-to-clipboard pattern the main map's Lighthouse/contact
+           section already uses for exactly this reason. -->
+      <button type="button" class="copy-email-btn" data-copy="mehunfaizan@gmail.com">Copy Email</button>
       <a href="https://github.com/faizan-ahmed-dev" target="_blank" rel="noopener">GitHub</a>
       <a href="https://www.linkedin.com/in/faizan-ahmed-150911386/" target="_blank" rel="noopener">LinkedIn</a>
       <a href="https://ricocheted-ball.itch.io/" target="_blank" rel="noopener">itch.io</a>
@@ -169,22 +182,22 @@
       <h3>Game Development</h3>
       <ul class="skill-tags">
         <li class="core">Godot</li><li class="core">2D Game Development</li><li class="core">Game Design Fundamentals</li>
-        <li>Unity</li>
+        <li class="core">Unity</li>
       </ul>
     </div>
     <div class="skill-group">
       <h3>Tools &amp; Platforms</h3>
       <ul class="skill-tags">
         <li class="core">Git</li><li class="core">GitHub</li><li class="core">Visual Studio</li>
-        <li>VS Code</li><li>Godot Editor</li><li>Unity Editor</li><li>itch.io</li><li>Figma</li>
+        <li class="core">VS Code</li><li class="core">Godot Editor</li><li class="core">Unity Editor</li><li class="core">itch.io</li><li>Figma</li>
       </ul>
     </div>
     <div class="skill-group">
       <h3>Certifications</h3>
       <ul class="cert-list">
-        <li>HackerRank &mdash; SQL (Basic)</li>
-        <li>HackerRank &mdash; SQL (Intermediate)</li>
-        <li>HackerRank &mdash; SQL (Advanced)</li>
+        <li><a href="https://www.hackerrank.com/certificates/d4dbe30c8ed4" target="_blank" rel="noopener">HackerRank: SQL (Basic)</a>, 20 Apr 2026</li>
+        <li><a href="https://www.hackerrank.com/certificates/6bd41b8946d4" target="_blank" rel="noopener">HackerRank: SQL (Intermediate)</a>, 31 May 2026</li>
+        <li><a href="https://www.hackerrank.com/certificates/5c1cf30b8c3f" target="_blank" rel="noopener">HackerRank: SQL (Advanced)</a>, 31 May 2026</li>
       </ul>
     </div>
     <div class="skill-group">
@@ -214,7 +227,7 @@
     <div class="card">
       <h3>Ricochet</h3>
       <p class="meta">C# &middot; WinForms &middot; Top-down arena shooter</p>
-      <p>Bouncing-bullet arena shooter: WASD to move, mouse to aim, click to shoot &mdash; but your own ricochets can hurt you, so aim wisely.</p>
+      <p>Bouncing-bullet arena shooter: WASD to move, mouse to aim, click to shoot, but your own ricochets can hurt you, so aim wisely.</p>
       <div class="tags"><span>C#</span><span>WinForms</span></div>
       <div class="links"><a href="https://ricocheted-ball.itch.io/" target="_blank" rel="noopener">Play on itch.io &rarr;</a></div>
     </div>
@@ -230,7 +243,7 @@
     <div class="card">
       <h3>Pew Pew Jet</h3>
       <p class="meta">C# &middot; WinForms &middot; Arcade shooter</p>
-      <p>An arcade-style jet shooter built entirely in WinForms &mdash; dodging and shooting waves of enemies with simple, readable code underneath.</p>
+      <p>An arcade-style jet shooter built entirely in WinForms, dodging and shooting waves of enemies with simple, readable code underneath.</p>
       <div class="tags"><span>C#</span><span>WinForms</span></div>
       <div class="links"><a href="https://ricocheted-ball.itch.io/" target="_blank" rel="noopener">Play on itch.io &rarr;</a></div>
     </div>
@@ -238,7 +251,7 @@
     <div class="card">
       <h3>Wordoku</h3>
       <p class="meta">C++ &middot; Console</p>
-      <p>A word-based twist on Sudoku, built as a console application in C++ &mdash; logic-puzzle generation and validation from scratch.</p>
+      <p>A word-based twist on Sudoku, built as a console application in C++, with logic-puzzle generation and validation built from scratch.</p>
       <div class="tags"><span>C++</span><span>Console</span></div>
       <div class="links"><a href="https://ricocheted-ball.itch.io/" target="_blank" rel="noopener">Play on itch.io &rarr;</a></div>
     </div>
@@ -265,7 +278,7 @@
     </div>
 
     <div class="card">
-      <h3>Gym Management System &mdash; Desktop Edition</h3>
+      <h3>Gym Management System: Desktop Edition</h3>
       <p class="meta">C# &middot; WinForms &middot; MySQL</p>
       <p>A desktop rebuild of a gym management system, adding a GUI and a real database layer on top of the original console version's logic.</p>
       <div class="tags"><span>C#</span><span>WinForms</span><span>MySQL</span></div>
@@ -273,9 +286,9 @@
     </div>
 
     <div class="card">
-      <h3>Gym Management System &mdash; Console Edition</h3>
+      <h3>Gym Management System: Console Edition</h3>
       <p class="meta">C++</p>
-      <p>A console-based gym management system covering member records, memberships, and payments &mdash; the original version, built in C++.</p>
+      <p>A console-based gym management system covering member records, memberships, and payments. The original version, built in C++.</p>
       <div class="tags"><span>C++</span><span>Console</span></div>
       <div class="links"><a href="https://github.com/faizan-ahmed-dev" target="_blank" rel="noopener">View on GitHub &rarr;</a></div>
     </div>
@@ -288,7 +301,7 @@
     <div class="card">
       <h3>Morse Station</h3>
       <p class="meta">Vanilla JavaScript &middot; Web Audio API</p>
-      <p>An interactive Morse code tool that plays back real audio tones as you type &mdash; built without any frameworks.</p>
+      <p>An interactive Morse code tool that plays back real audio tones as you type, built without any frameworks.</p>
       <div class="tags"><span>JavaScript</span><span>Web Audio API</span></div>
       <div class="links"><a href="games/morse-station.html" target="_blank" rel="noopener">Open live &rarr;</a></div>
     </div>
@@ -304,7 +317,7 @@
     <div class="card">
       <h3>Soletude</h3>
       <p class="meta">HTML &middot; CSS &middot; No JavaScript</p>
-      <p>A static e-commerce-style storefront built with just HTML and CSS &mdash; no JavaScript, no framework, just layout and styling fundamentals. Shown as a screenshot gallery on the map rather than hosted live.</p>
+      <p>A static e-commerce-style storefront built with just HTML and CSS, no JavaScript and no framework, just layout and styling fundamentals. Shown as a screenshot gallery on the map rather than hosted live.</p>
       <div class="tags"><span>HTML</span><span>CSS</span></div>
     </div>
   </section>
@@ -314,7 +327,7 @@
 
     <div class="faq-item">
       <h3>Are you currently a student?</h3>
-      <p>Yes &mdash; currently working through a B.S. in Computer Science, with Year 1 complete.</p>
+      <p>Yes, currently working through a B.S. in Computer Science, with Year 1 complete.</p>
     </div>
     <div class="faq-item">
       <h3>What are you looking for right now?</h3>
@@ -332,5 +345,25 @@
   </footer>
 
 </main>
+
+<script>
+  // Copy-to-clipboard fallback for the Email button - see the comment
+  // next to it in the HTML for why mailto: alone isn't reliable enough.
+  document.querySelectorAll('.copy-email-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      const text = btn.dataset.copy;
+      const done = function(){
+        const orig = btn.textContent;
+        btn.textContent = 'Copied!';
+        setTimeout(function(){ btn.textContent = orig; }, 1400);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done).catch(done);
+      } else {
+        done();
+      }
+    });
+  });
+</script>
 </body>
 </html>
