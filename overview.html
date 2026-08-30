@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Faizan Ahmed | Portfolio Overview</title>
+<meta name="description" content="Faizan Ahmed - B.S. Computer Science student and game developer. Skills, games, software projects, and web projects, on one page.">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#120c1c">
+<meta name="color-scheme" content="dark">
+<link rel="canonical" href="https://faizanahmed.me/overview.html">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+
+<!-- This page is intentionally its own small, self-contained stylesheet
+     rather than reusing the map's CSS/JS - the entire point of it is to be
+     the fast, no-exploration path, so it shouldn't cost anything close to
+     what the interactive map costs. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "name": "Faizan Ahmed",
+  "url": "https://faizanahmed.me/",
+  "jobTitle": "Game Developer",
+  "description": "B.S. Computer Science student and game developer building 2D games, tools, and full-stack applications.",
+  "email": "mailto:mehunfaizan@gmail.com",
+  "sameAs": [
+    "https://github.com/faizan-ahmed-dev",
+    "https://www.linkedin.com/in/faizan-ahmed-150911386/",
+    "https://ricocheted-ball.itch.io/"
+  ]
+}
+</script>
+
+<style>
+  :root{
+    --bg:#120c1c; --bg-panel:#1a1330; --line:rgba(224,180,92,.18);
+    --parchment:#f4ead1; --parchment-dim:#b9ad91;
+    --gold:#e0b45c; --gold-bright:#f5d78a;
+    --ink:#0d0812;
+  }
+  *,*::before,*::after{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  body{
+    margin:0; background:var(--bg); color:var(--parchment);
+    font-family:'Spectral',serif; line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{ color:var(--gold-bright); }
+  a:focus-visible, button:focus-visible{ outline:2px solid var(--gold-bright); outline-offset:3px; }
+  h1,h2,h3{ font-family:'Cinzel',serif; font-weight:700; color:var(--gold); margin:0 0 .5em; }
+  .wrap{ max-width:880px; margin:0 auto; padding:48px 24px 96px; }
+
+  .top-nav{
+    display:flex; justify-content:space-between; align-items:center; gap:12px;
+    max-width:880px; margin:0 auto; padding:16px 24px; flex-wrap:wrap;
+  }
+  .top-nav a{ font-size:13px; letter-spacing:.04em; text-decoration:none; }
+  .top-nav a:hover{ text-decoration:underline; }
+
+  header.hero{ padding-bottom:24px; border-bottom:1px solid var(--line); margin-bottom:40px; }
+  header.hero h1{ font-size:clamp(28px,5vw,40px); letter-spacing:.03em; margin-bottom:6px; }
+  header.hero .role{ color:var(--parchment-dim); font-size:15px; letter-spacing:.04em; margin-bottom:20px; }
+  header.hero p{ max-width:65ch; margin:0 0 14px; }
+  .hero-links{ display:flex; flex-wrap:wrap; gap:10px; margin-top:22px; }
+  .hero-links a{
+    display:inline-block; text-decoration:none; font-family:'Cinzel',serif; font-size:12px;
+    letter-spacing:.1em; padding:10px 18px; border-radius:3px; border:1px solid var(--gold);
+    color:var(--gold); transition:background .2s ease, color .2s ease;
+  }
+  .hero-links a:hover, .hero-links a:focus-visible{ background:var(--gold); color:var(--ink); }
+  .hero-links a.primary{ background:var(--gold); color:var(--ink); }
+  .hero-links a.primary:hover{ background:var(--gold-bright); }
+
+  section{ margin-bottom:56px; }
+  section > h2{ font-size:22px; letter-spacing:.06em; text-transform:uppercase; margin-bottom:20px; }
+  section > p.section-note{ color:var(--parchment-dim); font-size:14px; margin-top:-12px; margin-bottom:24px; }
+
+  .skill-group{ margin-bottom:18px; }
+  .skill-group h3{ font-size:13px; letter-spacing:.1em; text-transform:uppercase; color:var(--parchment-dim); font-weight:600; margin-bottom:8px; }
+  .skill-tags{ display:flex; flex-wrap:wrap; gap:8px; list-style:none; margin:0; padding:0; }
+  .skill-tags li{
+    font-size:13px; padding:5px 12px; border-radius:20px; border:1px solid var(--line);
+    background:rgba(224,180,92,.06);
+  }
+  .skill-tags li.core{ border-color:var(--gold); color:var(--gold-bright); }
+
+  .cert-list, .learning-list{ margin:0; padding-left:20px; font-size:14px; color:var(--parchment-dim); }
+  .cert-list li, .learning-list li{ margin-bottom:4px; }
+  .cert-list a{ color:inherit; text-decoration:underline; }
+
+  .card{
+    border:1px solid var(--line); background:var(--bg-panel); border-radius:6px;
+    padding:22px 24px; margin-bottom:18px; position:relative;
+  }
+  .card h3{ font-size:18px; margin-bottom:4px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .card .badge{
+    font-family:'Spectral',serif; font-size:11px; font-weight:600; letter-spacing:.04em;
+    color:var(--ink); background:var(--gold-bright); padding:2px 9px; border-radius:20px;
+  }
+  .card .meta{ font-size:12px; color:var(--parchment-dim); letter-spacing:.03em; margin-bottom:10px; }
+  .card p{ margin:0 0 12px; font-size:14.5px; }
+  .card .tags{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; }
+  .card .tags span{ font-size:11.5px; padding:3px 9px; border-radius:20px; border:1px solid var(--line); color:var(--parchment-dim); }
+  .card .links{ display:flex; gap:16px; flex-wrap:wrap; }
+  .card .links a{ font-size:13px; font-weight:600; text-decoration:none; }
+  .card .links a:hover{ text-decoration:underline; }
+
+  .faq-item{ margin-bottom:18px; }
+  .faq-item h3{ font-size:15px; margin-bottom:4px; }
+  .faq-item p{ margin:0; font-size:14.5px; color:var(--parchment-dim); }
+
+  footer{ border-top:1px solid var(--line); padding-top:24px; text-align:center; color:var(--parchment-dim); font-size:13px; }
+  footer a{ color:var(--gold-bright); }
+
+  @media (max-width:520px){
+    .wrap{ padding:32px 18px 72px; }
+    .top-nav{ padding:14px 18px; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="top-nav" aria-label="Page utilities">
+  <a href="index.html">&larr; Back to the interactive map</a>
+  <a href="assets/docs/Faizan_Ahmed_Resume.pdf" download="Faizan_Ahmed_Resume.pdf">Download résumé (PDF)</a>
+</nav>
+
+<main class="wrap">
+
+  <header class="hero">
+    <h1>Faizan Ahmed</h1>
+    <p class="role">B.S. Computer Science student &middot; Game Developer &middot; 3.66 GPA</p>
+    <p>I'm a Computer Science student who likes turning strange ideas into things people actually want to use. My favorite proof of that: <strong>404: Dino Not Found</strong>, a game I built from concept to finish under Pakistan Game Jam 2026's constraints &mdash; it went on to <strong>win the jam by public vote</strong>. Beyond games, I've shipped several full-stack software projects, from desktop apps to database-backed systems, each teaching me something the last one didn't.</p>
+    <p>I'm currently seeking internships, collaborations, and opportunities to work on ambitious projects with people who are passionate about creating exceptional technology.</p>
+    <div class="hero-links">
+      <a class="primary" href="assets/docs/Faizan_Ahmed_Resume.pdf" download="Faizan_Ahmed_Resume.pdf">Download Résumé</a>
+      <a href="mailto:mehunfaizan@gmail.com">Email</a>
+      <a href="https://github.com/faizan-ahmed-dev" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://www.linkedin.com/in/faizan-ahmed-150911386/" target="_blank" rel="noopener">LinkedIn</a>
+      <a href="https://ricocheted-ball.itch.io/" target="_blank" rel="noopener">itch.io</a>
+    </div>
+  </header>
+
+  <section aria-labelledby="skills-h">
+    <h2 id="skills-h">Skills</h2>
+
+    <div class="skill-group">
+      <h3>Languages</h3>
+      <ul class="skill-tags">
+        <li class="core">C++</li><li class="core">C#</li><li class="core">SQL</li>
+        <li>C</li><li>CSS3</li><li>JavaScript</li><li>Python</li>
+      </ul>
+    </div>
+    <div class="skill-group">
+      <h3>Frameworks &amp; Libraries</h3>
+      <ul class="skill-tags"><li class="core">.NET</li><li class="core">WinForms</li><li class="core">STL</li></ul>
+    </div>
+    <div class="skill-group">
+      <h3>Databases</h3>
+      <ul class="skill-tags"><li class="core">MySQL</li><li class="core">SQL Server</li></ul>
+    </div>
+    <div class="skill-group">
+      <h3>Game Development</h3>
+      <ul class="skill-tags">
+        <li class="core">Godot</li><li class="core">2D Game Development</li><li class="core">Game Design Fundamentals</li>
+        <li>Unity</li>
+      </ul>
+    </div>
+    <div class="skill-group">
+      <h3>Tools &amp; Platforms</h3>
+      <ul class="skill-tags">
+        <li class="core">Git</li><li class="core">GitHub</li><li class="core">Visual Studio</li>
+        <li>VS Code</li><li>Godot Editor</li><li>Unity Editor</li><li>itch.io</li><li>Figma</li>
+      </ul>
+    </div>
+    <div class="skill-group">
+      <h3>Certifications</h3>
+      <ul class="cert-list">
+        <li>HackerRank &mdash; SQL (Basic)</li>
+        <li>HackerRank &mdash; SQL (Intermediate)</li>
+        <li>HackerRank &mdash; SQL (Advanced)</li>
+      </ul>
+    </div>
+    <div class="skill-group">
+      <h3>Currently Learning</h3>
+      <ul class="learning-list">
+        <li>Data Structures &amp; Algorithms</li>
+        <li>Software Engineering Principles</li>
+        <li>Computer Networks</li>
+        <li>Git &amp; Collaborative Development</li>
+        <li>Game Architecture</li>
+        <li>3D Game Development</li>
+      </ul>
+    </div>
+  </section>
+
+  <section aria-labelledby="games-h">
+    <h2 id="games-h">Games</h2>
+
+    <div class="card">
+      <h3>404: Dino Not Found <span class="badge">🏆 Won &middot; Pakistan Game Jam 2026</span></h3>
+      <p class="meta">Unity &middot; C# &middot; Built in 87 hours</p>
+      <p>You used to be trapped in an offline browser game. Now you fix people's Wi-Fi instead. Don't let the connection drop&hellip; you know what happens if it does. Won Pakistan Game Jam 2026 by public vote.</p>
+      <div class="tags"><span>Unity</span><span>C#</span><span>Game Jam</span></div>
+      <div class="links"><a href="https://ricocheted-ball.itch.io/" target="_blank" rel="noopener">Play on itch.io &rarr;</a></div>
+    </div>
+
+    <div class="card">
+      <h3>Ricochet</h3>
+      <p class="meta">C# &middot; WinForms &middot; Top-down arena shooter</p>
+      <p>Bouncing-bullet arena shooter: WASD to move, mouse to aim, click to shoot &mdash; but your own ricochets can hurt you, so aim wisely.</p>
+      <div class="tags"><span>C#</span><span>WinForms</span></div>
+      <div class="links"><a href="https://ricocheted-ball.itch.io/" target="_blank" rel="noopener">Play on itch.io &rarr;</a></div>
+    </div>
+
+    <div class="card">
+      <h3>Level One</h3>
+      <p class="meta">Godot &middot; GDScript &middot; Platformer</p>
+      <p>A short 2D platformer built in Godot, focused on tight movement feel and level design fundamentals.</p>
+      <div class="tags"><span>Godot</span><span>GDScript</span></div>
+      <div class="links"><a href="https://ricocheted-ball.itch.io/" target="_blank" rel="noopener">Play on itch.io &rarr;</a></div>
+    </div>
+
+    <div class="card">
+      <h3>Pew Pew Jet</h3>
+      <p class="meta">C# &middot; WinForms &middot; Arcade shooter</p>
+      <p>An arcade-style jet shooter built entirely in WinForms &mdash; dodging and shooting waves of enemies with simple, readable code underneath.</p>
+      <div class="tags"><span>C#</span><span>WinForms</span></div>
+      <div class="links"><a href="https://ricocheted-ball.itch.io/" target="_blank" rel="noopener">Play on itch.io &rarr;</a></div>
+    </div>
+
+    <div class="card">
+      <h3>Wordoku</h3>
+      <p class="meta">C++ &middot; Console</p>
+      <p>A word-based twist on Sudoku, built as a console application in C++ &mdash; logic-puzzle generation and validation from scratch.</p>
+      <div class="tags"><span>C++</span><span>Console</span></div>
+      <div class="links"><a href="https://ricocheted-ball.itch.io/" target="_blank" rel="noopener">Play on itch.io &rarr;</a></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="software-h">
+    <h2 id="software-h">Software Projects</h2>
+    <p class="section-note">Full-stack and desktop applications, from Devlog Village.</p>
+
+    <div class="card">
+      <h3>Adaptive Fitness &amp; Nutrition Management System</h3>
+      <p class="meta">C# &middot; WinForms &middot; MySQL</p>
+      <p>A staff-facing portal for a fitness business: tracks active students, workout sessions, billing, and reporting from a single dashboard.</p>
+      <div class="tags"><span>C#</span><span>WinForms</span><span>MySQL</span></div>
+      <div class="links"><a href="https://github.com/faizan-ahmed-dev" target="_blank" rel="noopener">View on GitHub &rarr;</a></div>
+    </div>
+
+    <div class="card">
+      <h3>OBE Evaluation System</h3>
+      <p class="meta">C# &middot; WinForms &middot; MySQL</p>
+      <p>An Outcomes-Based Education management system for tracking rubrics, assessment components, attendance, and generating reports.</p>
+      <div class="tags"><span>C#</span><span>WinForms</span><span>MySQL</span></div>
+      <div class="links"><a href="https://github.com/faizan-ahmed-dev" target="_blank" rel="noopener">View on GitHub &rarr;</a></div>
+    </div>
+
+    <div class="card">
+      <h3>Gym Management System &mdash; Desktop Edition</h3>
+      <p class="meta">C# &middot; WinForms &middot; MySQL</p>
+      <p>A desktop rebuild of a gym management system, adding a GUI and a real database layer on top of the original console version's logic.</p>
+      <div class="tags"><span>C#</span><span>WinForms</span><span>MySQL</span></div>
+      <div class="links"><a href="https://github.com/faizan-ahmed-dev" target="_blank" rel="noopener">View on GitHub &rarr;</a></div>
+    </div>
+
+    <div class="card">
+      <h3>Gym Management System &mdash; Console Edition</h3>
+      <p class="meta">C++</p>
+      <p>A console-based gym management system covering member records, memberships, and payments &mdash; the original version, built in C++.</p>
+      <div class="tags"><span>C++</span><span>Console</span></div>
+      <div class="links"><a href="https://github.com/faizan-ahmed-dev" target="_blank" rel="noopener">View on GitHub &rarr;</a></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="web-h">
+    <h2 id="web-h">Web Projects</h2>
+    <p class="section-note">Sites and browser-based tools, not games, from Site Seeing.</p>
+
+    <div class="card">
+      <h3>Morse Station</h3>
+      <p class="meta">Vanilla JavaScript &middot; Web Audio API</p>
+      <p>An interactive Morse code tool that plays back real audio tones as you type &mdash; built without any frameworks.</p>
+      <div class="tags"><span>JavaScript</span><span>Web Audio API</span></div>
+      <div class="links"><a href="games/morse-station.html" target="_blank" rel="noopener">Open live &rarr;</a></div>
+    </div>
+
+    <div class="card">
+      <h3>Sorting Visualizer</h3>
+      <p class="meta">Vanilla JavaScript &middot; Algorithms</p>
+      <p>A step-by-step visualizer for common sorting algorithms, built to make the way each algorithm moves through data actually visible.</p>
+      <div class="tags"><span>JavaScript</span><span>Algorithms</span></div>
+      <div class="links"><a href="games/sorting-visualizer.html" target="_blank" rel="noopener">Open live &rarr;</a></div>
+    </div>
+
+    <div class="card">
+      <h3>Soletude</h3>
+      <p class="meta">HTML &middot; CSS &middot; No JavaScript</p>
+      <p>A static e-commerce-style storefront built with just HTML and CSS &mdash; no JavaScript, no framework, just layout and styling fundamentals. Shown as a screenshot gallery on the map rather than hosted live.</p>
+      <div class="tags"><span>HTML</span><span>CSS</span></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="faq-h">
+    <h2 id="faq-h">Quick Answers</h2>
+
+    <div class="faq-item">
+      <h3>Are you currently a student?</h3>
+      <p>Yes &mdash; currently working through a B.S. in Computer Science, with Year 1 complete.</p>
+    </div>
+    <div class="faq-item">
+      <h3>What are you looking for right now?</h3>
+      <p>Internships and opportunities in software engineering or game development where I can contribute to real, shipped work.</p>
+    </div>
+    <div class="faq-item">
+      <h3>What's your stack?</h3>
+      <p>C++, C#, and SQL day-to-day, WinForms and .NET for desktop apps, Godot and Unity for games, and MySQL for anything that needs a database.</p>
+    </div>
+  </section>
+
+  <footer>
+    <p>Prefer the full experience? <a href="index.html">Go back to the interactive map &rarr;</a></p>
+    <p>&copy; 2026 Faizan Ahmed</p>
+  </footer>
+
+</main>
+</body>
+</html>

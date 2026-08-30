@@ -296,10 +296,6 @@ function refreshProgress() {
 const world = document.getElementById('world');
 const overlay = document.getElementById('transitionOverlay');
 const panel = document.getElementById('destPanel');
-const destName = document.getElementById('destName');
-const destDesc = document.getElementById('destDesc');
-const destIcon = document.getElementById('destIcon');
-const returnBtn = document.getElementById('returnBtn');
 let traveling = false;
 
 function travelTo(m) {
@@ -346,7 +342,6 @@ function travelTo(m) {
   }
 
   const id = m.dataset.id;
-  const info = BIOME_INFO[id] || {};
   // This used to fire at a fixed 780ms while the transition itself ran for
   // .85s (850ms) - so building each biome's DOM (camp cards, listeners,
   // IntersectionObservers, etc.) started 70ms *before* the animation had
@@ -451,19 +446,14 @@ function travelTo(m) {
       refreshProgress();
       requestAnimationFrame(() => { if (window.initGlitchmire) window.initGlitchmire(); });
     } else {
-      panel.classList.remove('castle-mode');
-      panel.classList.remove('peak-mode');
-      panel.classList.remove('village-mode');
-      panel.classList.remove('forest-mode');
-      panel.classList.remove('siteseeing-mode');
-      panel.classList.remove('lighthouse-mode');
-      panel.classList.remove('swamp-mode');
-      destName.textContent = m.dataset.name;
-      destDesc.textContent = info.desc || destDesc.textContent;
-      destIcon.textContent = info.icon || '🚧';
-      panel.classList.add('show');
-      visited.add(id);
-      refreshProgress();
+      // No marker in the HTML has an id outside the 7 branches above, so
+      // this should be unreachable - kept only as a guard against a future
+      // marker being added without a matching branch here, rather than
+      // silently doing nothing (or, as before, showing a permanent
+      // "under construction" panel that could never actually be reached).
+      console.warn('travelTo(): no handler for biome id "' + id + '"');
+      traveling = false;
+      return;
     }
     setRoute(id);
   }, transitionMs + 10);
@@ -507,7 +497,6 @@ function openRouteDirect(id, item) {
   if (id === 'castle' && item) window.__pendingCastleGame = item;
   if (id === 'village' && item) window.__pendingVillageHouse = item;
 
-  const info = BIOME_INFO[id] || {};
   panel.classList.remove('castle-mode', 'peak-mode', 'village-mode', 'forest-mode', 'siteseeing-mode', 'lighthouse-mode', 'swamp-mode');
   if (id === 'castle') {
     panel.classList.add('castle-mode', 'show');
@@ -534,11 +523,12 @@ function openRouteDirect(id, item) {
     visited.add(id); refreshProgress();
     if (window.initGlitchmire) window.initGlitchmire();
   } else {
-    destName.textContent = marker.dataset.name;
-    destDesc.textContent = info.desc || destDesc.textContent;
-    destIcon.textContent = info.icon || '🚧';
-    panel.classList.add('show');
-    visited.add(id); refreshProgress();
+    // See the matching guard in travelTo() - unreachable with the current
+    // 7 markers, kept only in case a future marker is added without a
+    // matching branch here.
+    console.warn('openRouteDirect(): no handler for biome id "' + id + '"');
+    traveling = false;
+    return false;
   }
   traveling = false;
   return true;
@@ -785,7 +775,6 @@ function closeDest() {
   clearRoute();
 }
 window.closeDest = closeDest;
-returnBtn.addEventListener('click', closeDest);
 document.getElementById('castleReturnBtn').addEventListener('click', closeDest);
 document.getElementById('ssReturnBtn').addEventListener('click', closeDest);
 document.getElementById('lhReturnBtn').addEventListener('click', closeDest);

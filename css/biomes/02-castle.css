@@ -1,0 +1,585 @@
+/* ============================================================
+   CASTLE OF GAMES
+   Note: lines ~470-570 of this file (the two @media blocks right
+   before the file ends, plus the standalone a:focus-visible rule) are
+   actually shared/global rules - map HUD, featured-strip, and
+   biome-label responsive behavior - that happened to sit at this point
+   in the original single-file biomes.css. Left here rather than moved,
+   to keep this split a pure reordering-free extraction of the original
+   (verified byte-for-byte against it).
+   ============================================================ */
+
+  .castle-scene::before{
+    content:''; position:absolute; inset:0; pointer-events:none; z-index:0;
+    background-image:radial-gradient(rgba(241,233,218,.5) 1px, transparent 1.4px);
+    background-size:15px 15px;
+    opacity:.05;
+  }
+  .castle-slashes{
+    position:absolute; inset:0; z-index:0; overflow:hidden; pointer-events:none;
+    will-change:transform;
+  }
+  .castle-slashes span{
+    position:absolute; top:-20%; height:140%; width:34%;
+    background:linear-gradient(180deg, rgba(200,30,58,.16), rgba(200,30,58,.02));
+    transform:skewX(-14deg);
+    will-change:transform,opacity;
+  }
+  .castle-slashes span:nth-child(1){ right:6%; width:22%; background:linear-gradient(180deg, rgba(200,30,58,.22), transparent); }
+  .castle-slashes span:nth-child(2){ right:-4%; width:10%; background:linear-gradient(180deg, rgba(255,58,86,.14), transparent); }
+  .castle-slashes span:nth-child(3){ left:-8%; width:16%; background:linear-gradient(180deg, transparent, rgba(162,79,224,.10)); }
+
+  .castle-scene .cs-embers{ position:absolute; inset:0; pointer-events:none; z-index:1; overflow:hidden; }
+  .castle-scene .cs-ember{
+    position:absolute; bottom:0; width:4px;height:4px;border-radius:50%;
+    background:var(--ember); opacity:0; box-shadow:0 0 10px 2px rgba(255,157,66,.85);
+    will-change:transform,opacity;
+  }
+  .castle-scene .cs-ember.big{ width:6px; height:6px; box-shadow:0 0 14px 3px rgba(255,157,66,.9); }
+
+  .castle-topbar{
+    position:relative; z-index:3;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:22px 34px; flex-shrink:0;
+    border-bottom:1px solid var(--castle-line);
+    overflow:hidden;
+  }
+  .castle-sweep{
+    content:''; position:absolute; top:0; left:-40%; width:30%; height:100%;
+    background:linear-gradient(100deg, transparent, rgba(255,58,86,.16), transparent);
+    transform:skewX(-20deg); pointer-events:none; will-change:left;
+  }
+  .castle-title{
+    margin:0; font-weight:400;
+    position:relative; z-index:1;
+    font-family:'Cinzel',serif; letter-spacing:.22em; font-size:13px;
+    color:var(--castle-ink-dim); text-transform:uppercase;
+  }
+  .castle-title strong{ color:var(--castle-crimson-bright); }
+  .castle-return{
+    position:relative; z-index:1;
+    font-family:'Oswald',sans-serif; letter-spacing:.12em; font-size:12px; font-weight:600;
+    text-transform:uppercase; color:var(--castle-ink-dim);
+    background:transparent; border:1px solid var(--castle-line); border-radius:2px;
+    padding:9px 18px; cursor:pointer;
+    transition:color .2s ease, border-color .2s ease, background .2s ease, transform .15s ease;
+    clip-path:polygon(10px 0,100% 0,calc(100% - 10px) 100%,0 100%);
+  }
+  .castle-return:hover, .castle-return:focus-visible{
+    color:var(--castle-bg); background:var(--gold); border-color:var(--gold); transform:translateX(-2px);
+  }
+
+  .castle-frame{ position:relative; z-index:3; flex:1; display:flex; min-height:0; }
+
+  /* ---- sidebar ---- */
+  .castle-sidebar{
+    width:280px; flex-shrink:0; padding:28px 0 28px 28px;
+    display:flex; flex-direction:column; gap:16px;
+    border-right:1px solid var(--castle-line);
+  }
+  .castle-sidebar-label{
+    font-family:'Share Tech Mono',monospace; font-size:10px; letter-spacing:.28em;
+    color:var(--castle-ink-dim); text-transform:uppercase; margin-bottom:2px; padding-right:28px;
+  }
+  .game-entry{
+    position:relative; text-align:left; cursor:pointer; border:none;
+    font-family:inherit; color:var(--castle-ink);
+    background:var(--castle-panel);
+    padding:16px 32px 16px 22px; margin-right:28px;
+    display:flex; align-items:center; gap:16px;
+    clip-path:polygon(0 0, 100% 0, calc(100% - 18px) 100%, 0 100%);
+    transition:background .2s ease, transform .18s cubic-bezier(.3,.6,.4,2), opacity .45s cubic-bezier(.2,.8,.3,1.2);
+  }
+  .game-entry:hover{ background:var(--castle-panel-alt); transform:translateX(5px) skewX(-1deg); }
+  .game-entry .ge-icon{
+    width:36px; height:36px; flex-shrink:0; opacity:.85;
+    will-change:transform;
+  }
+  .game-entry .ge-icon svg{ width:100%; height:100%; display:block; }
+  .game-entry .ge-text{ min-width:0; }
+  .game-entry .ge-title{
+    font-family:'Oswald',sans-serif; font-weight:600; font-size:15px;
+    letter-spacing:.03em; text-transform:uppercase; line-height:1.2;
+  }
+  .game-entry .ge-jam-badge{
+    display:inline-block; font-family:'Share Tech Mono',monospace; font-size:8.5px;
+    letter-spacing:.05em; color:var(--gold-bright); background:rgba(224,180,92,.12);
+    border:1px solid rgba(224,180,92,.4); border-radius:10px;
+    padding:1px 7px; margin-left:7px; vertical-align:middle; white-space:nowrap;
+  }
+  .game-entry .ge-sub{
+    font-family:'Share Tech Mono',monospace; font-size:10px; letter-spacing:.06em;
+    color:var(--castle-ink-dim); margin-top:3px;
+  }
+  .game-entry .ge-bar{
+    position:absolute; left:0; top:0; bottom:0; width:4px;
+    background:transparent; transition:background .2s ease, box-shadow .25s ease;
+  }
+  .game-entry.active{ background:var(--castle-crimson); }
+  .game-entry.active::after{
+    content:''; position:absolute; inset:0;
+    background-image:radial-gradient(rgba(255,255,255,.5) 1px, transparent 1.3px);
+    background-size:9px 9px; opacity:.10; mix-blend-mode:overlay;
+  }
+  .game-entry.active .ge-sub{ color:rgba(241,233,218,.75); }
+  .game-entry.active .ge-bar{ background:var(--gold-bright); }
+  .game-entry.active .ge-icon{ opacity:1; filter:drop-shadow(0 0 5px rgba(255,255,255,.6)); }
+  .game-entry:focus-visible{ outline:2px solid var(--gold-bright); outline-offset:-2px; }
+  .game-entry:not(.active):hover .ge-bar{
+    box-shadow:0 0 16px 4px var(--gd-accent, var(--gold));
+    background:var(--gd-accent, var(--gold));
+  }
+
+  /* ---- stage ---- */
+  .castle-stage{
+    position:relative; flex:1; min-width:0; overflow-y:auto;
+    padding:40px 48px 36px;
+  }
+
+  .game-entry, .gd-play, .castle-return, .gd-linkedin{ will-change:transform; }
+  .game-entry:active{ transform:scale(.97) translateX(2px); }
+  .gd-play:active, .gd-linkedin:active{ transform:scale(.95); }
+  .castle-return:active{ transform:scale(.95); }
+  .gd-thumbs button:active{ transform:scale(.9); }
+
+  /* ---- game switch transition: plain fade + rise, no sweeping bar,
+     no transitionend dependency. A setTimeout matched to the transition
+     duration swaps the content - the simplest, least failure-prone way
+     to sequence a one-shot content swap. ---- */
+  .game-detail{
+    position:relative; z-index:1; max-width:980px;
+    opacity:1; transform:translateY(0);
+    transition:opacity .22s ease, transform .22s ease;
+  }
+  .game-detail.switching{
+    opacity:0; transform:translateY(10px);
+  }
+
+  .gd-head{ position:relative; margin-bottom:28px; }
+  .gd-numeral{
+    position:absolute; top:-34px; right:-6px; z-index:0;
+    font-family:'Oswald',sans-serif; font-weight:700; font-size:150px; line-height:1;
+    color:transparent; -webkit-text-stroke:1.5px var(--gd-accent, var(--gold));
+    opacity:.16; user-select:none; pointer-events:none;
+  }
+  .gd-tag{
+    position:relative; display:inline-block; font-family:'Share Tech Mono',monospace; font-size:10px;
+    letter-spacing:.18em; text-transform:uppercase; color:var(--gd-accent,var(--gold));
+    border:1px solid var(--gd-accent,var(--gold)); border-radius:2px;
+    padding:4px 10px; margin-bottom:14px;
+  }
+  .gd-jam-badge{
+    position:relative; display:flex; align-items:center; gap:8px;
+    font-family:'Share Tech Mono',monospace; font-size:11px; letter-spacing:.03em;
+    color:var(--castle-ink); background:rgba(224,180,92,.08);
+    border:1px solid rgba(224,180,92,.35); border-radius:4px;
+    padding:8px 14px; margin:0 0 14px; width:fit-content;
+  }
+  .gd-jam-trophy{ font-size:14px; flex-shrink:0; }
+  .gd-jam-text strong{ color:var(--gold-bright); font-weight:600; }
+  .gd-title{
+    position:relative;
+    font-family:'Oswald',sans-serif; font-weight:700; font-size:clamp(30px,3.6vw,46px);
+    letter-spacing:.01em; text-transform:uppercase; line-height:1.05; margin-bottom:6px;
+  }
+  .gd-tagline{ position:relative; font-style:italic; color:var(--castle-ink-dim); font-size:15px; }
+
+  .gd-body{ display:flex; gap:36px; align-items:flex-start; flex-wrap:wrap; }
+  .gd-media{ flex:1 1 460px; min-width:300px; }
+  .gd-side{ flex:1 1 300px; min-width:260px; }
+
+  .gd-main-wrap{
+    position:relative; border-radius:3px; overflow:hidden;
+    border:1px solid var(--castle-line);
+    box-shadow:0 18px 40px -16px rgba(0,0,0,.65);
+    clip-path:polygon(0 0,100% 0,100% 100%,14px 100%,0 calc(100% - 14px));
+    background:#000;
+    display:flex; align-items:center; justify-content:center;
+    min-height:220px; max-height:460px;
+  }
+  .gd-main{
+    display:block;
+    width:auto; height:auto;
+    max-width:100%; max-height:460px;
+    object-fit:contain;
+    transition:transform .5s cubic-bezier(.2,.8,.2,1), opacity .15s ease;
+  }
+  .gd-main-wrap:hover .gd-main{ transform:scale(1.045); }
+  .gd-thumbs{ display:flex; gap:10px; margin-top:12px; flex-wrap:wrap; }
+  .gd-thumbs button{
+    padding:0; border:2px solid transparent; border-radius:2px; cursor:pointer;
+    background:#000; width:78px; height:48px; overflow:hidden; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    opacity:.55; transition:opacity .2s ease, border-color .2s ease, transform .15s ease;
+  }
+  .gd-thumbs button img{ max-width:100%; max-height:100%; width:auto; height:auto; object-fit:contain; display:block; }
+  .gd-thumbs button:hover{ opacity:.9; transform:translateY(-2px); }
+  .gd-thumbs button.active{ opacity:1; border-color:var(--gd-accent,var(--gold)); }
+
+  .gd-meta{
+    display:flex; flex-direction:column; gap:0; margin-bottom:20px;
+    border-top:1px solid var(--castle-line);
+  }
+  .gd-meta .mrow{
+    display:flex; justify-content:space-between; gap:12px;
+    padding:9px 2px; border-bottom:1px solid var(--castle-line);
+    font-family:'Share Tech Mono',monospace; font-size:11px; letter-spacing:.04em;
+  }
+  .gd-meta .mrow span:first-child{ color:var(--castle-ink-dim); text-transform:uppercase; letter-spacing:.14em; font-size:10px; }
+  .gd-meta .mrow span:last-child{ color:var(--castle-ink); text-align:right; }
+
+  /* ---- Bestiary with lore panel ---- */
+  .gd-bestiary-wrap{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    margin-bottom:20px;
+  }
+  .gd-bestiary{
+    display:flex; gap:14px; flex-wrap:wrap;
+    padding:14px 16px; background:rgba(0,0,0,.24); border:1px solid var(--castle-line); border-radius:3px;
+  }
+  .gd-bestiary .bchip{
+    display:flex; flex-direction:column; align-items:center; gap:6px; width:58px;
+    cursor:pointer;
+    transition:transform .2s ease, filter .2s ease;
+  }
+  .gd-bestiary .bchip:hover{
+    transform:scale(1.1);
+    filter:drop-shadow(0 0 8px var(--gd-accent, var(--gold)));
+  }
+  .gd-bestiary .bchip img{
+    width:46px; height:46px; object-fit:contain;
+    filter:drop-shadow(0 3px 6px rgba(0,0,0,.5));
+    transition:transform .2s ease;
+  }
+  .gd-bestiary .bchip:hover img{ transform:scale(1.15) rotate(-4deg); }
+  .gd-bestiary .bchip span{
+    font-family:'Share Tech Mono',monospace; font-size:9px; letter-spacing:.06em;
+    color:var(--castle-ink-dim); text-transform:uppercase; text-align:center;
+  }
+  .gd-bestiary-lore{
+    padding:12px 16px;
+    background:rgba(0,0,0,.35);
+    border:1px solid var(--castle-line);
+    border-radius:3px;
+    min-height:44px;
+    font-size:13px;
+    line-height:1.5;
+    color:var(--castle-ink);
+    opacity:.85;
+    transition:opacity .25s ease, border-color .25s ease;
+  }
+  .gd-bestiary-lore .lore-label{
+    font-family:'Share Tech Mono',monospace;
+    font-size:10px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:var(--castle-ink-dim);
+    display:block;
+    margin-bottom:2px;
+  }
+  .gd-bestiary-lore .lore-text{
+    font-style:italic;
+  }
+  .gd-bestiary-lore.has-lore{
+    border-color:var(--gd-accent, var(--gold));
+    opacity:1;
+  }
+
+  /* ---- Description (opacity fixed) ---- */
+  .gd-desc-wrapper{
+    position:relative;
+    max-height:180px;
+    overflow-y:auto;
+    margin-bottom:22px;
+  }
+  .gd-desc-wrapper.overflowing{
+    mask-image: linear-gradient(to bottom, black 65%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, black 65%, transparent 100%);
+  }
+  .gd-desc-wrapper::-webkit-scrollbar{
+    width:3px;
+  }
+  .gd-desc-wrapper::-webkit-scrollbar-track{
+    background:transparent;
+  }
+  .gd-desc-wrapper::-webkit-scrollbar-thumb{
+    background:var(--gd-accent, var(--gold));
+    border-radius:3px;
+  }
+  .gd-desc{
+    font-size:14.5px;
+    line-height:1.75;
+    opacity:1;
+    margin-bottom:0;
+  }
+
+  .gd-links{
+    display:flex; gap:14px; align-items:center; flex-wrap:wrap;
+  }
+  .gd-play{
+    font-family:'Oswald',sans-serif; letter-spacing:.1em; font-size:12px; font-weight:600;
+    text-transform:uppercase; text-decoration:none; color:var(--castle-bg);
+    background:var(--gd-accent,var(--gold)); padding:12px 26px; border-radius:2px;
+    clip-path:polygon(8px 0,100% 0,calc(100% - 8px) 100%,0 100%);
+    transition:filter .2s ease, transform .15s ease; display:inline-block;
+  }
+  .gd-play:hover, .gd-play:focus-visible{ filter:brightness(1.15); transform:translateY(-2px); }
+  .gd-play.disabled{
+    background:transparent; color:var(--castle-ink-dim); border:1px solid var(--castle-line);
+    cursor:default; pointer-events:none;
+  }
+
+  /* ---- LinkedIn button ---- */
+  .gd-linkedin{
+    font-family:'Oswald',sans-serif; letter-spacing:.1em; font-size:12px; font-weight:600;
+    text-transform:uppercase; text-decoration:none;
+    color:#fff;
+    background:#0a66c2;
+    padding:12px 26px; border-radius:2px;
+    border:1px solid #0a66c2;
+    clip-path:polygon(8px 0,100% 0,calc(100% - 8px) 100%,0 100%);
+    transition:background .25s ease, transform .15s ease, box-shadow .25s ease, border-color .25s ease;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    box-shadow:0 0 20px rgba(10,102,194,.15);
+  }
+  .gd-linkedin:hover, .gd-linkedin:focus-visible{
+    background:#0d7ae8;
+    border-color:#0d7ae8;
+    transform:translateY(-2px);
+    box-shadow:0 0 30px rgba(10,102,194,.35);
+  }
+  .gd-linkedin:active{
+    transform:scale(.95);
+  }
+  .gd-linkedin .li-icon{
+    font-size:16px;
+    transition:transform .2s ease;
+  }
+  .gd-linkedin:hover .li-icon{
+    transform:scale(1.1);
+  }
+
+  /* ---- Corner brackets + scan-line for screenshots ---- */
+  .gd-main-wrap .corner-brackets{
+    position:absolute; inset:-1px; pointer-events:none; z-index:2;
+    opacity:0;
+    transition:opacity .4s ease;
+  }
+  .gd-main-wrap .corner-brackets::before,
+  .gd-main-wrap .corner-brackets::after{
+    content:''; position:absolute; width:18px; height:18px;
+    border:1.5px solid var(--gd-accent, var(--gold));
+    opacity:.85;
+  }
+  .gd-main-wrap .corner-brackets::before{
+    top:2px; left:2px;
+    border-right:none; border-bottom:none;
+  }
+  .gd-main-wrap .corner-brackets::after{
+    bottom:2px; right:2px;
+    border-left:none; border-top:none;
+  }
+  .gd-main-wrap.active-frame .corner-brackets{ opacity:1; }
+
+  .gd-main-wrap .scan-line{
+    position:absolute; inset:0; pointer-events:none; z-index:1;
+    overflow:hidden;
+    opacity:0;
+    transition:opacity .6s ease;
+  }
+  .gd-main-wrap .scan-line::after{
+    content:''; position:absolute; top:0; left:0; width:200%; height:2px;
+    background:linear-gradient(90deg, transparent, var(--gd-accent, var(--gold)), transparent);
+    opacity:.5;
+    animation:scanSweep 4s linear infinite;
+  }
+  .gd-main-wrap.active-frame .scan-line{ opacity:1; }
+  @keyframes scanSweep{
+    0%{ top:0%; left:-100%; }
+    100%{ top:100%; left:100%; }
+  }
+
+  /* ---- Numeral pulse ---- */
+  .gd-numeral.pulse-once{
+    animation:numeralPulseOnce .7s cubic-bezier(.2,.9,.3,1.2) forwards;
+  }
+  @keyframes numeralPulseOnce{
+    0%{ opacity:.16; transform:scale(1); -webkit-text-stroke-color:var(--gd-accent, var(--gold)); }
+    40%{ opacity:.45; transform:scale(1.08); -webkit-text-stroke-color:var(--gd-accent, var(--gold)); }
+    100%{ opacity:.25; transform:scale(1); -webkit-text-stroke-color:var(--gd-accent, var(--gold)); }
+  }
+  .gd-numeral.glow-static{
+    opacity:.25 !important;
+  }
+
+  /* ---- Play button arrow ---- */
+  .gd-play .play-arrow{
+    display:inline-block;
+    transition:transform .25s cubic-bezier(.2,.9,.3,1.3);
+    margin-left:6px;
+    font-size:14px;
+  }
+  .gd-play:hover .play-arrow,
+  .gd-play:focus-visible .play-arrow{
+    transform:translateX(6px) scale(1.1);
+  }
+  .gd-play.disabled .play-arrow{ display:none; }
+
+  /* ---- P5-style snap ---- */
+  .game-entry.snap-active{
+    transition:background 0.01s ease, transform 0.01s ease !important;
+    background:var(--castle-crimson) !important;
+  }
+
+  /* ---- Castle entrance ---- */
+  .castle-scene.castle-entering{
+    animation:castleArrive .7s cubic-bezier(.2,.9,.3,1.2) forwards;
+  }
+  @keyframes castleArrive{
+    0%{ opacity:0; transform:scale(1.08) rotate(-1.2deg); filter:brightness(1.6); }
+    60%{ opacity:1; transform:scale(1) rotate(0deg); filter:brightness(1.1); }
+    100%{ opacity:1; transform:scale(1) rotate(0deg); filter:brightness(1); }
+  }
+
+  /* ---- Sidebar dimming ---- */
+  .castle-sidebar.dim-others .game-entry:not(.active){
+    opacity:.35;
+    transform:scale(.96) translateX(-4px);
+    pointer-events:none;
+    transition:opacity .35s cubic-bezier(.2,.8,.3,1.2),
+               transform .35s cubic-bezier(.2,.8,.3,1.2);
+  }
+  .castle-sidebar.dim-others .game-entry.active{
+    transition:opacity .35s cubic-bezier(.2,.8,.3,1.2),
+               transform .35s cubic-bezier(.2,.8,.3,1.2);
+  }
+
+  @media (max-width:860px){
+    .castle-frame{ flex-direction:column; overflow-y:auto; }
+    .castle-sidebar{
+      width:auto; flex-direction:row; overflow-x:auto; padding:16px; gap:10px;
+      border-right:none; border-bottom:1px solid var(--castle-line);
+    }
+    .castle-sidebar-label{ display:none; }
+    .game-entry{ margin-right:0; flex-shrink:0; }
+    .castle-stage{ padding:26px 22px; }
+    .gd-numeral{ font-size:96px; top:-20px; }
+    .gd-body{ gap:26px; }
+    .castle-sidebar.dim-others .game-entry.active{
+      transform:scale(1.04);
+    }
+  }
+  @media (max-width:640px){
+    .castle-topbar{ padding:16px 18px; }
+    .castle-title{ font-size:10px; }
+    .gd-title{ font-size:24px; }
+    .gd-numeral{ display:none; }
+  }
+
+  a:focus-visible, button:focus-visible{ outline:2px solid var(--gold-bright); outline-offset:3px; }
+
+  @media (max-width:640px){
+    .hud{ padding:18px 18px; }
+    .hud-title{ font-size:16px; }
+    .hud-title span{ font-size:9px; }
+    .hud-player{ font-size:9px; }
+    .featured-strip{
+      top:108px; left:18px; right:18px; max-width:none;
+      overflow-x:auto; flex-wrap:nowrap; padding-bottom:4px;
+      -webkit-overflow-scrolling:touch; scrollbar-width:none;
+    }
+    .featured-strip::-webkit-scrollbar{ display:none; }
+    .featured-card{ width:72px; height:56px; flex-shrink:0; }
+    .fc-label{ font-size:8.5px; padding:4px 6px; }
+    .biome-label{ font-size:10px; }
+    /* With every label visible at once, "Castle of Games" and "Farpoint
+       Lighthouse" sit close enough on phones that their nowrap text
+       collides (visible in testing). Let labels wrap to two short lines
+       here - narrower per-label footprint - and nudge these two markers
+       slightly further apart so there's real clearance either way. */
+    .biome-label{ white-space:normal; max-width:92px; text-align:center; line-height:1.25; }
+    /* Subtitle shrinks to match the label's own mobile treatment above -
+       the extra vertical line this adds is modest, but keeping it as
+       small as legibly possible avoids adding to the horizontal-collision
+       tuning already done for labels at this breakpoint (see above). */
+    .biome-subtitle{ font-size:8.5px; padding:1px 6px; }
+    .biome-marker[data-id="castle"]{ left:56% !important; }
+    .biome-marker[data-id="lighthouse"]{ left:83% !important; }
+    /* Reposition two landmarks that collide with other mobile-only UI at
+       this breakpoint: "Site Seeing" (left:70%/top:24% on desktop) sits
+       right in the featured-work strip's band once that strip reflows to
+       full-width at top:108px on phones, and "The Glitchmire"
+       (left:6%/top:86%) lands almost exactly on top of the bottom-left
+       compass button. Neither collision exists on desktop, so only moved
+       here. !important is needed to beat the inline left/top on the marker. */
+    .biome-marker[data-id="siteseeing"]{ left:76% !important; top:36% !important; }
+    .biome-marker[data-id="swamp"]{ left:14% !important; top:78% !important; }
+    .biome-marker .icon-wrap svg{ width:46px; height:auto; }
+    .compass-wrap{ left:18px; bottom:18px; }
+    .compass{ width:34px;height:34px; }
+    .compass-menu{ min-width:170px; font-size:11px; }
+    .hint{ font-size:9px; bottom:14px; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    #world.zooming, #transitionOverlay.wipe, #destPanel{
+      transition-duration:.25s !important;
+    }
+    .game-entry{ transition-duration:.001s !important; }
+    .game-detail{ transition-duration:.001s !important; }
+    .gd-main-wrap .scan-line{ display:none; }
+  }
+
+        /* ── reset & base ── */
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html,
+        body {
+            width: 100%;
+            min-height: 100vh;
+            min-height: calc(var(--vh, 1vh) * 100);
+            min-height: 100svh;
+            background: #0d0812;
+            font-family: 'Spectral', serif;
+            color: #f4ead9;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+        :root {
+            --dusk-dark: #0d0812;
+            --dusk-purple: #1D1225;
+            --dusk-mid: #2D1B36;
+            --dusk-warm: #3D2238;
+            --amber: #FFB300;
+            --amber-soft: #FFE082;
+            --amber-glow: rgba(255, 179, 0, .25);
+            --wood-dark: #3D2A1C;
+            --wood-mid: #5C3D2E;
+            --wood-warm: #7A5240;
+            --terracotta: #C85A32;
+            --cream: #FAF6EE;
+            --cream-warm: #F5EDE0;
+            --shadow-soft: rgba(0, 0, 0, .4);
+        }
+
+        /* ── smooth scroll lock ── */
+        .scroll-container {
+            width: 100%;
+            height: 100vh;
+            height: calc(var(--vh, 1vh) * 100);
+            height: 100svh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+            position: relative;
+        }
+

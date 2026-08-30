@@ -408,6 +408,11 @@ function ssApplyIndex(index){
   if (s.kind === 'live') {
     const frame = document.getElementById('ssVfIframe');
     frame.src = s.src;
+    // Two different live-project entries share this one iframe - without
+    // updating its title per-project, a screen reader announces the same
+    // generic "Live project preview" for whichever one happens to be
+    // showing, giving no way to tell them apart.
+    frame.title = s.title + ' - live preview';
     frame.classList.add('ss-vf-active');
   } else {
     ssGalleryIndex = 0;

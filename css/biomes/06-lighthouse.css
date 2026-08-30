@@ -1,0 +1,355 @@
+/* ============================================================
+   FARPOINT LIGHTHOUSE - contact / about
+   A night ocean scene. A rotating beam from the tower sweeps the
+   water; each contact channel is a buoy that catches the light as
+   the beam passes it (synced by JS via getBoundingClientRect angle
+   math - see lighthouse.js: syncBuoyPulses). A "Captain's Log"
+   console holds the bio, resume, and a mailto-only contact form -
+   nested inside #destPanel exactly like every other panel-based
+   biome (Castle/Peak/Village/Site Seeing).
+   ============================================================ */
+.lighthouse-scene{
+  position:absolute; inset:0; z-index:5;
+  display:flex; flex-direction:column;
+  opacity:0; visibility:hidden; pointer-events:none;
+  transition:opacity .25s ease;
+  overflow:hidden;
+  font-family:'Spectral', serif;
+  background:linear-gradient(180deg, #050810 0%, #0a1420 38%, #0d1f2b 62%, #123240 100%);
+  cursor: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cpath%20d%3D%22M2%2012L22%203L14%2022L11%2013L2%2012Z%22%20fill%3D%22%239fd8ff%22%20stroke%3D%22%23122630%22%20stroke-width%3D%221.3%22%20stroke-linejoin%3D%22round%22/%3E%3Cpath%20d%3D%22M11%2013L22%203%22%20stroke%3D%22%23122630%22%20stroke-width%3D%221%22/%3E%3C/svg%3E") 12 12, auto;
+}
+#destPanel.show.lighthouse-mode .lighthouse-scene{ opacity:1; visibility:visible; pointer-events:auto; }
+
+.lh-topbar{
+  position:relative; z-index:20;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:22px 34px;
+}
+.lh-title{
+  margin:0; font-weight:400;
+  font-family:'Cinzel', serif; font-size:22px; letter-spacing:.04em;
+  color:#eaf6ff;
+}
+.lh-title strong{ color:#9fd8ff; }
+.lh-return{
+  font-family:'Share Tech Mono', monospace; font-size:12px; letter-spacing:.06em;
+  color:#eaf6ff; background:rgba(18,38,48,.55); border:1px solid rgba(159,216,255,.35);
+  border-radius:999px; padding:9px 18px; cursor:pointer;
+  transition:background .2s ease, transform .15s ease;
+}
+.lh-return:hover, .lh-return:focus-visible{ background:rgba(159,216,255,.2); border-color:#9fd8ff; }
+.lh-return:active{ transform:scale(.95); }
+
+/* ---------- SKY ---------- */
+.lh-sky{
+  position:absolute; top:0; left:0; right:0; height:46%;
+  overflow:hidden; pointer-events:none; z-index:1;
+}
+.lh-moon{
+  position:absolute; top:12%; right:14%; width:56px; height:56px; border-radius:50%;
+  background:radial-gradient(circle at 35% 32%, #fffef2, #f4ecc9 55%, #e3d9a8 100%);
+  box-shadow:0 0 40px 14px rgba(244,236,201,.25), 0 0 90px 30px rgba(244,236,201,.1);
+}
+.lh-stars{ position:absolute; inset:0; }
+.lh-star{
+  position:absolute; border-radius:50%; background:#eaf6ff;
+  animation:lhTwinkle 4s ease-in-out infinite;
+}
+@keyframes lhTwinkle{ 0%,100%{ opacity:.25; } 50%{ opacity:.9; } }
+
+/* ---------- OCEAN ---------- */
+.lh-ocean{
+  position:relative; flex:1; overflow:hidden; z-index:2;
+}
+.lh-wave{
+  position:absolute; left:-10%; right:-10%; height:120px;
+  background-repeat:repeat-x;
+  background-image:repeating-linear-gradient(100deg,
+    rgba(159,216,255,.09) 0 40px, transparent 40px 90px);
+  opacity:.6;
+}
+.lh-wave-far{ bottom:60%; height:70px; animation:lhWaveDrift 22s linear infinite; opacity:.35; }
+.lh-wave-mid{ bottom:32%; height:100px; animation:lhWaveDrift 15s linear infinite reverse; opacity:.5; }
+.lh-wave-near{ bottom:0; height:160px; animation:lhWaveDrift 10s linear infinite;
+  background:linear-gradient(180deg, transparent, rgba(4,10,16,.6)),
+    repeating-linear-gradient(100deg, rgba(159,216,255,.12) 0 50px, transparent 50px 110px);
+}
+@keyframes lhWaveDrift{ from{ background-position-x:0; } to{ background-position-x:-400px; } }
+
+/* ---------- TOWER + BEAM ---------- */
+.lh-tower{
+  position:absolute; left:5%; bottom:6%; width:70px; height:128px; z-index:6;
+}
+.lh-tower svg{ position:absolute; inset:0; filter:drop-shadow(0 8px 14px rgba(0,0,0,.5)); }
+.lh-lamp-core{
+  animation:lhLampFlicker 2.6s ease-in-out infinite;
+}
+@keyframes lhLampFlicker{ 0%,100%{ opacity:1; } 50%{ opacity:.75; } }
+
+.lh-beam-pivot{
+  position:absolute; left:35px; top:7px; width:1px; height:1px;
+  animation:lhBeamSpin 14s linear infinite; /* keep in sync with BEAM_DURATION in js/biomes/lighthouse.js */
+}
+@keyframes lhBeamSpin{ from{ transform:rotate(0deg); } to{ transform:rotate(360deg); } }
+.lh-beam{
+  position:absolute; left:0; top:0; width:70vw; max-width:1100px; height:220px;
+  transform:translateY(-50%);
+  transform-origin:0% 50%;
+  clip-path:polygon(0 42%, 100% 0%, 100% 100%, 0 58%);
+  background:linear-gradient(to right, rgba(255,247,214,.65), rgba(255,247,214,.12) 45%, transparent 75%);
+  mix-blend-mode:screen;
+  pointer-events:none;
+}
+
+/* ---------- BUOYS ---------- */
+.lh-buoys{ position:absolute; inset:0; z-index:7; }
+.lh-buoy{
+  position:absolute; transform:translate(-50%,-50%) scale(calc(.7 + .3 * var(--depth, 1)));
+  display:flex; flex-direction:column; align-items:center; gap:4px;
+  cursor:pointer; outline:none;
+  animation:lhBob 4.5s ease-in-out infinite;
+  animation-delay:calc(var(--depth, 1) * -1.5s);
+  z-index:1;
+}
+.lh-buoy:focus-visible .lh-buoy-body{ box-shadow:0 0 0 2px #9fd8ff; }
+@keyframes lhBob{ 0%,100%{ transform:translate(-50%,-52%) scale(calc(.7 + .3 * var(--depth, 1))); } 50%{ transform:translate(-50%,-48%) scale(calc(.7 + .3 * var(--depth, 1))); } }
+
+.lh-buoy-glow{
+  position:absolute; left:50%; top:50%; width:46px; height:46px;
+  transform:translate(-50%,-50%) scale(.4);
+  border-radius:50%;
+  background:radial-gradient(circle, rgba(255,247,214,.9), rgba(159,216,255,.35) 55%, transparent 75%);
+  opacity:.3; pointer-events:none;
+  animation:lhBuoyPulse 14s linear infinite; /* keep in sync with BEAM_DURATION in js/biomes/lighthouse.js */
+}
+@keyframes lhBuoyPulse{
+  0%,90%,100%{ opacity:.28; transform:translate(-50%,-50%) scale(.4); }
+  95%{ opacity:1; transform:translate(-50%,-50%) scale(1); }
+  98%{ opacity:.55; transform:translate(-50%,-50%) scale(.7); }
+}
+
+.lh-buoy-body{
+  position:relative; width:30px; height:30px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  background:radial-gradient(circle at 35% 30%, #244a5a, #0f232c 70%);
+  border:1px solid rgba(159,216,255,.4);
+  color:#cdeeff;
+  box-shadow:0 3px 8px rgba(0,0,0,.4);
+  transition:box-shadow .2s ease, border-color .2s ease;
+}
+.lh-buoy:hover .lh-buoy-body, .lh-buoy.active .lh-buoy-body{
+  border-color:#eaf6ff; box-shadow:0 0 14px 2px rgba(159,216,255,.5);
+}
+.lh-buoy-icon{ width:16px; height:16px; }
+
+.lh-buoy-label{
+  font-family:'Share Tech Mono', monospace; font-size:10px; letter-spacing:.05em;
+  color:#bfe4ff; opacity:.8; text-shadow:0 1px 3px rgba(0,0,0,.7);
+  white-space:nowrap;
+}
+
+.lh-buoy-card{
+  position:absolute; bottom:calc(100% + 14px); left:50%; transform:translateX(-50%) translateY(6px);
+  min-width:200px; max-width:240px;
+  background:rgba(8,18,26,.96); border:1px solid rgba(159,216,255,.35); border-radius:8px;
+  padding:14px 16px; text-align:center;
+  opacity:0; visibility:hidden; pointer-events:none;
+  transition:opacity .18s ease, transform .18s ease;
+  z-index:20;
+  box-shadow:0 10px 30px rgba(0,0,0,.5);
+}
+.lh-buoy.active .lh-buoy-card{
+  opacity:1; visibility:visible; pointer-events:auto; transform:translateX(-50%) translateY(0);
+}
+.lh-buoy-card::after{
+  content:''; position:absolute; top:100%; left:50%; transform:translateX(-50%);
+  border:6px solid transparent; border-top-color:rgba(159,216,255,.35);
+}
+.lh-buoy-card-label{
+  font-family:'Cinzel', serif; font-size:12px; letter-spacing:.08em; color:#9fd8ff; margin-bottom:6px;
+}
+.lh-buoy-card-value{
+  font-family:'Share Tech Mono', monospace; font-size:12px; color:#eaf6ff;
+  word-break:break-word; margin-bottom:12px; line-height:1.5;
+}
+.lh-buoy-card-actions{ display:flex; gap:8px; justify-content:center; flex-wrap:wrap; }
+.lh-buoy-action{
+  font-family:'Share Tech Mono', monospace; font-size:11px; letter-spacing:.04em;
+  color:#0f232c; background:#9fd8ff; border:none; border-radius:999px;
+  padding:7px 14px; cursor:pointer; text-decoration:none; display:inline-block;
+  transition:background .18s ease, transform .12s ease;
+}
+.lh-buoy-action:hover{ background:#eaf6ff; }
+.lh-buoy-action:active{ transform:scale(.94); }
+.lh-buoy-copy{ background:transparent; border:1px solid rgba(159,216,255,.5); color:#cdeeff; }
+.lh-buoy-copy:hover{ background:rgba(159,216,255,.15); }
+
+/* ---------- CAPTAIN'S LOG CONSOLE ---------- */
+.lh-console{
+  position:absolute; top:50%; right:0; transform:translateY(-50%);
+  width:320px; max-height:82%;
+  display:flex; z-index:15;
+  transition:transform .35s cubic-bezier(.4,0,.2,1);
+}
+.lh-console.collapsed{ transform:translateY(-50%) translateX(calc(100% - 46px)); }
+.lh-console-tab{
+  align-self:center; writing-mode:vertical-rl; text-orientation:mixed;
+  background:rgba(18,38,48,.92); border:1px solid rgba(224,180,92,.35); border-right:none;
+  border-radius:8px 0 0 8px;
+  padding:16px 10px; display:flex; flex-direction:column; align-items:center; gap:8px;
+  cursor:pointer; color:var(--gold); flex-shrink:0;
+}
+.lh-console-tab-icon{ font-size:14px; transform:rotate(180deg); }
+.lh-console-tab-label{ font-family:'Cinzel', serif; font-size:11px; letter-spacing:.1em; }
+.lh-console-body{
+  flex:1; background:rgba(12,16,22,.92); border:1px solid rgba(224,180,92,.3);
+  border-radius:0 0 0 10px; overflow:hidden; box-shadow:-10px 0 40px rgba(0,0,0,.35);
+}
+.lh-console-scroll{
+  height:100%; max-height:74vh; overflow-y:auto; padding:26px 24px 22px;
+  color:var(--parchment);
+}
+.lh-name{
+  font-family:'Cinzel', serif; font-size:17px; letter-spacing:.03em; color:var(--gold-bright);
+  margin-bottom:10px;
+}
+.lh-handle{ font-family:'Share Tech Mono', monospace; font-size:11px; color:var(--parchment-dim); }
+.lh-bio-text{ font-size:13.5px; line-height:1.65; opacity:.88; margin-bottom:12px; }
+.lh-resume-btn{
+  display:inline-flex; align-items:center; gap:8px;
+  font-family:'Cinzel', serif; font-size:11px; letter-spacing:.1em;
+  color:var(--ink); background:var(--gold); border-radius:4px;
+  padding:10px 16px; margin-top:6px; text-decoration:none;
+  transition:background .2s ease, transform .15s ease;
+}
+.lh-resume-btn:hover{ background:var(--gold-bright); }
+.lh-resume-btn:active{ transform:scale(.96); }
+
+.lh-divider{
+  display:flex; align-items:center; gap:10px; margin:22px 0 16px;
+  font-family:'Share Tech Mono', monospace; font-size:10px; letter-spacing:.15em;
+  color:var(--parchment-dim); text-transform:uppercase;
+}
+.lh-divider::before, .lh-divider::after{ content:''; flex:1; height:1px; background:rgba(224,180,92,.25); }
+
+.lh-form{ display:flex; flex-direction:column; gap:14px; }
+.lh-field{ display:flex; flex-direction:column; gap:6px; }
+.lh-field span{
+  font-family:'Share Tech Mono', monospace; font-size:10.5px; letter-spacing:.06em;
+  color:var(--parchment-dim); text-transform:uppercase;
+}
+.lh-field input, .lh-field textarea{
+  font-family:'Spectral', serif; font-size:13.5px; color:var(--parchment);
+  background:rgba(244,234,209,.06); border:1px solid rgba(224,180,92,.3); border-radius:4px;
+  padding:9px 11px; resize:vertical;
+}
+.lh-field input:focus, .lh-field textarea:focus{
+  outline:none; border-color:var(--gold);
+  background:rgba(244,234,209,.1);
+}
+.lh-form-submit{
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  font-family:'Cinzel', serif; font-size:12px; letter-spacing:.1em;
+  background:transparent; color:var(--gold); border:1px solid var(--gold); border-radius:4px;
+  padding:11px 20px; cursor:pointer;
+  transition:background .2s ease, color .2s ease;
+}
+.lh-form-submit:hover{ background:var(--gold); color:var(--ink); }
+.lh-form-submit:active{ transform:scale(.97); }
+.lh-form-submit:disabled{ opacity:.6; cursor:default; }
+.lh-form-submit:disabled:hover{ background:transparent; color:var(--gold); }
+.lh-form-hint{
+  font-family:'Share Tech Mono', monospace; font-size:10px; color:var(--parchment-dim);
+  opacity:.7; text-align:center; margin-top:2px;
+}
+.lh-form.lh-hidden{ display:none; }
+.lh-honeypot{
+  position:absolute; left:-9999px; width:1px; height:1px; opacity:0; pointer-events:none;
+}
+
+.lh-form-success{
+  display:none; flex-direction:column; gap:12px; align-items:flex-start;
+  background:rgba(124,255,158,.06); border:1px solid rgba(124,255,158,.3); border-radius:6px;
+  padding:16px;
+}
+.lh-form-success.visible{ display:flex; }
+.lh-form-success .lh-form-confirm-title{ color:var(--swamp-glow); }
+.lh-form-success .lh-form-confirm-text{ font-size:12.5px; line-height:1.6; opacity:.85; }
+.lh-form-success .lh-form-confirm-text strong{ color:var(--swamp-glow); }
+
+.lh-form-confirm{
+  display:none; flex-direction:column; gap:12px;
+  background:rgba(224,180,92,.06); border:1px solid rgba(224,180,92,.3); border-radius:6px;
+  padding:16px;
+}
+.lh-form-confirm.visible{ display:flex; }
+.lh-form-confirm-title{ font-family:'Cinzel', serif; font-size:13px; color:var(--gold-bright); }
+.lh-form-confirm-text{ font-size:12.5px; line-height:1.6; opacity:.85; }
+.lh-form-confirm-text strong{ color:var(--gold-bright); }
+.lh-form-confirm-body{
+  font-family:'Share Tech Mono', monospace; font-size:11.5px; line-height:1.6; color:var(--parchment);
+  background:rgba(0,0,0,.25); border:1px solid rgba(224,180,92,.2); border-radius:4px;
+  padding:12px; white-space:pre-wrap; word-break:break-word; margin:0;
+}
+.lh-form-confirm-actions{ display:flex; gap:8px; flex-wrap:wrap; }
+
+.lh-response-time{
+  color:var(--gold); opacity:.9; margin-top:8px;
+}
+
+.lh-faq{ display:flex; flex-direction:column; gap:8px; }
+.lh-faq-item{
+  background:rgba(224,180,92,.05); border:1px solid rgba(224,180,92,.18);
+  border-radius:6px; padding:2px 14px;
+}
+.lh-faq-item summary{
+  font-family:'Spectral', serif; font-size:13.5px; font-weight:600; color:var(--parchment);
+  cursor:pointer; padding:12px 0; list-style:none; display:flex; align-items:center;
+  justify-content:space-between; gap:10px;
+}
+.lh-faq-item summary::-webkit-details-marker{ display:none; }
+.lh-faq-item summary::after{
+  content:'+'; font-family:'Cinzel', serif; font-size:16px; color:var(--gold);
+  flex-shrink:0; transition:transform .2s ease;
+}
+.lh-faq-item[open] summary::after{ transform:rotate(45deg); }
+.lh-faq-item p{
+  font-size:12.5px; line-height:1.65; color:var(--parchment-dim); opacity:.9;
+  margin:0 0 14px;
+}
+
+.lh-footer-note{
+  text-align:center; margin-top:24px; padding-top:16px;
+  border-top:1px solid rgba(224,180,92,.15);
+}
+.lh-footer-note a{
+  font-family:'Share Tech Mono', monospace; font-size:11px; color:var(--parchment-dim);
+  text-decoration:none; letter-spacing:.05em;
+}
+.lh-footer-note a:hover{ color:var(--gold); }
+
+.lh-hint{
+  position:absolute; bottom:18px; left:50%; transform:translateX(-50%);
+  font-family:'Share Tech Mono', monospace; font-size:11px; color:#cdeeff;
+  opacity:.65; letter-spacing:.08em; z-index:16; pointer-events:none;
+  transition:opacity .8s ease;
+}
+.lh-hint.fade{ opacity:0; }
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width: 760px){
+  .lh-console{ width:78vw; max-width:320px; }
+  .lh-tower{ left:3%; width:52px; height:96px; }
+  .lh-beam-pivot{ left:26px; top:5px; }
+  .lh-buoy-label{ display:none; }
+  .lh-moon{ width:40px; height:40px; }
+}
+
+@media (prefers-reduced-motion: reduce){
+  /* Keep the beam, waves, stars, and buoy-glow sync alive - those carry the
+     scene's actual meaning (which contact is "lit"). Only drop the small
+     decorative bob so buoys don't visually wobble in place. */
+  .lh-buoy{ animation:none !important; }
+}
+
+

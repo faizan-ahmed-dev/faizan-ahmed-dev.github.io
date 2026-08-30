@@ -3,17 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <title>Faizan Ahmed | Portfolio</title>
-<meta name="description" content="The Overworld: an interactive portfolio map by Faizan Ahmed, B.S. Computer Science student and game developer. Explore projects, devlogs, and playable games across a hand-illustrated world.">
+<meta name="description" content="Faizan Ahmed - B.S. Computer Science student and game developer. Explore an interactive portfolio of games, software projects, and devlogs.">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#1a1130">
 <meta name="color-scheme" content="dark">
 <link rel="canonical" href="https://faizanahmed.me/">
 
+<!-- Google Fonts: preconnect + <link> instead of a CSS @import, which
+     serializes the request behind base.css finishing first and delays the
+     browser discovering the font files at all. This lets the browser start
+     fetching fonts in parallel with everything else, as soon as it parses
+     <head>. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;900&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=Share+Tech+Mono&family=Oswald:wght@500;600;700&display=swap">
+
 <!-- Open Graph -->
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://faizanahmed.me/">
-<meta property="og:title" content="The Overworld - A Portfolio by Faizan Ahmed">
-<meta property="og:description" content="An interactive portfolio map: explore projects, devlogs, and playable games by Faizan Ahmed, B.S. Computer Science student and game developer.">
+<meta property="og:title" content="Faizan Ahmed | Portfolio">
+<meta property="og:description" content="Faizan Ahmed - B.S. Computer Science student and game developer. Explore an interactive portfolio of games, software projects, and devlogs.">
 <meta property="og:image" content="https://faizanahmed.me/assets/images/og-preview.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -21,8 +30,8 @@
 
 <!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="The Overworld - A Portfolio by Faizan Ahmed">
-<meta name="twitter:description" content="An interactive portfolio map: explore projects, devlogs, and playable games by Faizan Ahmed, B.S. Computer Science student and game developer.">
+<meta name="twitter:title" content="Faizan Ahmed | Portfolio">
+<meta name="twitter:description" content="Faizan Ahmed - B.S. Computer Science student and game developer. Explore an interactive portfolio of games, software projects, and devlogs.">
 <meta name="twitter:image" content="https://faizanahmed.me/assets/images/og-preview.jpg">
 
 <!-- Favicon -->
@@ -60,7 +69,18 @@
 </script>
 
 <link rel="stylesheet" href="css/base.css?v=20260825-1">
-<link rel="stylesheet" href="css/biomes.css?v=20260825-1">
+<!-- biomes.css was split into these files (css/biomes/) to keep any single
+     file from growing unreadably large - they're loaded in the exact same
+     order as the original single file so the CSS cascade is unaffected. -->
+<link rel="stylesheet" href="css/biomes/00-shared.css?v=20260825-1">
+<link rel="stylesheet" href="css/biomes/01-mastery-peak.css?v=20260825-1">
+<link rel="stylesheet" href="css/biomes/02-castle.css?v=20260825-1">
+<link rel="stylesheet" href="css/biomes/03-village.css?v=20260825-1">
+<link rel="stylesheet" href="css/biomes/04-forest.css?v=20260825-1">
+<link rel="stylesheet" href="css/biomes/05-siteseeing.css?v=20260825-1">
+<link rel="stylesheet" href="css/biomes/06-lighthouse.css?v=20260825-1">
+<link rel="stylesheet" href="css/biomes/07-glitchmire.css?v=20260825-1">
+<link rel="stylesheet" href="css/biomes/08-perf-mode.css?v=20260825-1">
 </head>
 <body>
 <!-- shared gradients -->
@@ -199,6 +219,7 @@
     </div>
     <div class="ground-shadow"></div>
     <div class="biome-label">ORIGIN STORY</div>
+    <div class="biome-subtitle">About Me</div>
   </div>
 
   <!-- MOUNTAIN -->
@@ -219,6 +240,7 @@
     </div>
     <div class="ground-shadow"></div>
     <div class="biome-label">MASTERY PEAK</div>
+    <div class="biome-subtitle">Skills</div>
   </div>
 
   <!-- CASTLE -->
@@ -252,6 +274,7 @@
     </div>
     <div class="ground-shadow"></div>
     <div class="biome-label">CASTLE OF GAMES</div>
+    <div class="biome-subtitle">Games</div>
   </div>
 
   <!-- VILLAGE -->
@@ -276,6 +299,7 @@
     </div>
     <div class="ground-shadow"></div>
     <div class="biome-label">DEVLOG VILLAGE</div>
+    <div class="biome-subtitle">Project Devlogs</div>
   </div>
 
   <!-- LIGHTHOUSE -->
@@ -300,6 +324,7 @@
     </div>
     <div class="ground-shadow"></div>
     <div class="biome-label">FARPOINT LIGHTHOUSE</div>
+    <div class="biome-subtitle">Contact</div>
   </div>
 
   <!-- SWAMP -->
@@ -322,6 +347,7 @@
     </div>
     <div class="ground-shadow"></div>
     <div class="biome-label">THE GLITCHMIRE</div>
+    <div class="biome-subtitle">Experiments</div>
   </div>
 
   <!-- SITE SEEING -->
@@ -349,32 +375,33 @@
     </div>
     <div class="ground-shadow"></div>
     <div class="biome-label">SITE SEEING</div>
+    <div class="biome-subtitle">Web Projects</div>
   </div>
 
  </div>
 </div>
 
 <div class="hud">
-  <div class="hud-title">THE OVERWORLD<span>A LIVING PORTFOLIO MAP</span></div>
+  <h1 class="hud-title">THE OVERWORLD<span>A LIVING PORTFOLIO MAP</span></h1>
   <div class="hud-player">
-    YEAR 1 - COMPLETE
     <div class="badge">B.S. COMPUTER SCIENCE</div>
     <div class="hud-progress" id="hudProgress"></div>
+    <a class="hud-linear-link" href="overview.html">Prefer a simple page? View overview &rarr;</a>
   </div>
 </div>
 
 <div class="featured-strip" id="featuredStrip" aria-label="Featured work">
   <button class="featured-card" id="featuredDino" type="button">
-    <img src="assets/images/screenshots/dinowifi_1.jpg" alt="" loading="lazy">
+    <img src="assets/images/screenshots/dinowifi_1.jpg" alt="Title screen of 404: Dino Not Found, showing a pixel-art dinosaur mascot and Easy, Medium, and Hard difficulty buttons" loading="lazy">
     <span class="fc-badge">🏆 Jam</span>
     <span class="fc-label">404: Dino Not Found</span>
   </button>
   <button class="featured-card" id="featuredRicochet" type="button">
-    <img src="assets/images/screenshots/ricochet_1.jpg" alt="" loading="lazy">
+    <img src="assets/images/screenshots/ricochet_1.jpg" alt="Start screen of Ricochet, a bouncing-bullet arena shooter, showing the title and WASD/mouse controls" loading="lazy">
     <span class="fc-label">Ricochet</span>
   </button>
   <button class="featured-card" id="featuredFitness" type="button">
-    <img src="assets/images/screenshots/AdaptiveFitness_3_Dashboard.jpg" alt="" loading="lazy">
+    <img src="assets/images/screenshots/AdaptiveFitness_3_Dashboard.jpg" alt="Adaptive Fitness staff dashboard showing active student count, unpaid invoices, and a table of recent workout sessions" loading="lazy">
     <span class="fc-label">Adaptive Fitness</span>
   </button>
   <a class="featured-card featured-resume" id="featuredResume" href="assets/docs/Faizan_Ahmed_Resume.pdf" download="Faizan_Ahmed_Resume.pdf">
@@ -406,19 +433,12 @@
 <div id="transitionOverlay"></div>
 
 <div id="destPanel">
-  <div class="panel-card">
-    <span class="panel-icon" id="destIcon">🚧</span>
-    <h2 id="destName">-</h2>
-    <p id="destDesc">This region of the map is still being built.</p>
-    <button id="returnBtn">RETURN TO THE OVERWORLD</button>
-  </div>
-
   <div class="castle-scene" id="castleScene">
     <div class="castle-slashes"><span></span><span></span><span></span></div>
     <div class="cs-embers" id="csEmbers"></div>
     <div class="castle-topbar">
       <span class="castle-sweep" id="castleSweep"></span>
-      <div class="castle-title">The <strong>Castle</strong> of Games</div>
+      <h2 class="castle-title">The <strong>Castle</strong> of Games</h2>
       <button class="castle-return" id="castleReturnBtn">Return to the Overworld</button>
     </div>
     <div class="castle-frame">
@@ -453,7 +473,7 @@
 
     <!-- top bar -->
     <div class="peak-topbar">
-      <div class="peak-title">Mastery <strong>Peak</strong></div>
+      <h2 class="peak-title">Mastery <strong>Peak</strong></h2>
       <button class="peak-return" id="peakReturnBtn">Return to the Overworld</button>
     </div>
 
@@ -559,7 +579,7 @@
 
         <!-- Top Bar -->
         <div class="village-topbar">
-            <div class="village-title">Devlog <strong>Village</strong></div>
+            <h2 class="village-title">Devlog <strong>Village</strong></h2>
             <button class="village-return" id="villageReturnBtn">← Return Home</button>
         </div>
 
@@ -574,7 +594,7 @@
 
     <div class="siteseeing-scene" id="siteseeingScene">
       <div class="ss-topbar">
-        <div class="ss-title">Site <strong>Seeing</strong></div>
+        <h2 class="ss-title">Site <strong>Seeing</strong></h2>
         <button class="ss-return" id="ssReturnBtn">Return to the Overworld</button>
       </div>
 
@@ -641,7 +661,7 @@
                 </div>
                 <iframe class="ss-vf-view ss-vf-iframe" id="ssVfIframe" title="Live project preview"></iframe>
                 <div class="ss-vf-view ss-vf-gallery" id="ssVfGallery">
-                  <img id="ssVfGalleryImg" alt="">
+                  <img id="ssVfGalleryImg" alt="" loading="lazy">
                   <button class="ss-vf-gnext" id="ssVfGalleryNext" aria-label="Next photo">›</button>
                 </div>
                 <div class="ss-vf-vignette" aria-hidden="true"></div>
@@ -752,7 +772,7 @@
     <div class="lighthouse-scene" id="lighthouseScene">
 
       <div class="lh-topbar">
-        <div class="lh-title">Farpoint <strong>Lighthouse</strong></div>
+        <h2 class="lh-title">Farpoint <strong>Lighthouse</strong></h2>
         <button class="lh-return" id="lhReturnBtn">Return to the Overworld</button>
       </div>
 
@@ -799,7 +819,7 @@
           <div class="lh-console-scroll">
             <div class="lh-bio-block">
               <div class="lh-name">Faizan Ahmed <span class="lh-handle">- "Ricocheted Ball"</span></div>
-              <p class="lh-bio-text">I'm Faizan Ahmed, a Computer Science student driven by one goal: mastering the art of building software that people genuinely enjoy using. From game development to software engineering, I love turning ideas into polished, interactive experiences that challenge me to grow.</p>
+              <p class="lh-bio-text">I'm Faizan Ahmed, a Computer Science student (3.66 GPA) who likes turning strange ideas into things people actually want to use. My favorite proof of that: 404: Dino Not Found, a game I built from concept to finish under Pakistan Game Jam 2026's constraints — it went on to win the jam by public vote. Beyond games, I've shipped several full-stack software projects, from desktop apps to database-backed systems, each teaching me something the last one didn't.</p>
               <p class="lh-bio-text">I'm currently seeking internships, collaborations, and opportunities to work on ambitious projects with people who are passionate about creating exceptional technology.</p>
               <a class="lh-resume-btn" id="lhResumeBtn" href="assets/docs/Faizan_Ahmed_Resume.pdf" download="Faizan_Ahmed_Resume.pdf">
                 <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M10 3v10M6 9l4 4 4-4"/><path d="M3 14v2a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2"/></svg>
@@ -890,7 +910,7 @@
       <!-- ---------- WARNING ENTRANCE ---------- -->
       <div class="gm-warn-screen" id="gmWarnScreen">
         <div class="gm-warn-icon">⚠</div>
-        <div class="gm-glitch-title" data-text="THE GLITCHMIRE">THE GLITCHMIRE</div>
+        <h2 class="gm-glitch-title" data-text="THE GLITCHMIRE">THE GLITCHMIRE</h2>
         <div class="gm-warn-box">
           <p class="gm-warn-line" id="gmWarnLine1"></p>
           <p class="gm-warn-line" id="gmWarnLine2"></p>
@@ -975,10 +995,10 @@
 
                 <!-- COVER -->
                 <div class="book-cover" id="forestCover">
-                    <div class="cover-title">
+                    <h2 class="cover-title">
                         The Prologue
                         <small>a journal of first steps</small>
-                    </div>
+                    </h2>
                     <div class="cover-ornament">✦ ✦ ✦</div>
                 </div>
 

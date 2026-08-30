@@ -1,0 +1,63 @@
+/* ==========================================================================
+   PERFORMANCE MODE (mobile / low-power phones)
+   Toggled by js/biome-data.js as html.perf-mode - only ever on touch-primary
+   devices that are narrow-viewport or low-core-count, so this never touches
+   a desktop/laptop (mouse/trackpad) session. Nothing here hides content or
+   sections; it only lightens the two GPU-cost properties that are cheap on
+   a handful of desktop elements but add up fast across dozens of phone-GPU
+   composited/painted layers: backdrop-filter (full compositing blur pass)
+   and animated box-shadow (a repaint, not a compositor job, on every frame).
+   ========================================================================== */
+html.perf-mode {
+  /* Frosted-glass panels: keep the same translucent tint, drop the blur
+     pass behind them. Panels already use high-enough background opacity
+     (.6-.95) to stay legible without it. */
+  * {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  /* A couple of Mastery Peak panels leaned on that blur more than most
+     (.85 and .8 opacity, meant to be backed by a 16px blur) - without it
+     they let a faint "ghost" of the scrolling content underneath show
+     through. These two sit permanently over freely-scrolling content
+     (rather than appearing occasionally like most panels), so anything
+     short of fully opaque will eventually have some bright card heading
+     scroll directly behind it and bleed through - bumping to a flat 1
+     here rather than "closer to opaque" closes that gap for good. */
+  .peak-topbar { background: rgb(8, 11, 20) !important; }
+  .peak-progress { background: rgb(8, 11, 20) !important; }
+
+  /* Moon glow / string-light bulbs: swap the animated box-shadow (a full
+     repaint per element per frame) for a cheaper opacity pulse - same
+     "breathing light" read, compositor-only cost. */
+  .layer-sky .moon {
+    animation: perfMoonGlow 6s ease-in-out infinite alternate;
+  }
+  .string-lights .bulb {
+    animation: perfBulbFlicker var(--dur, 2.4s) ease-in-out infinite alternate;
+  }
+  /* Mastery Peak on mobile skips the JS-driven scroll gradient entirely
+     (see the PERF_MODE branch in updateProgress(), js/biomes/mountain.js) -
+     without this, .scroll-gradient would just be empty/transparent for the
+     whole scene on phones since nothing else sets a background on it. This
+     is a fixed mid-tone snapshot of what the desktop version looks like
+     around the midpoint of the scroll, not a moving gradient. */
+  .peak-scene .scroll-gradient {
+    background: linear-gradient(180deg,
+      rgb(40, 34, 41) 0%,
+      rgb(70, 70, 80) 30%,
+      rgb(130, 125, 110) 60%,
+      rgb(200, 195, 170) 100%
+    );
+  }
+}
+@keyframes perfMoonGlow {
+  0%   { opacity: .65; }
+  100% { opacity: .85; }
+}
+@keyframes perfBulbFlicker {
+  0%   { opacity: .6; transform: scale(.92); }
+  40%  { opacity: 1;  transform: scale(1.04); }
+  100% { opacity: .75; transform: scale(.97); }
+}

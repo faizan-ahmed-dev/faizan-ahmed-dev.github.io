@@ -132,7 +132,7 @@ const GAME_DATA = {
     title:'404: Dino Not Found',
     tag:'UNITY · C# · SIMULATION',
     tagline:'My first Unity project, built start to finish inside a single game jam.',
-    jam:{ event:'Pakistan Game Jam 2026', duration:'87 Hours', status:'Submitted · Won' },
+    jam:{ event:'Pakistan Game Jam 2026', duration:'87 Hours', status:'Won \u00b7 Public Vote' },
     accent:'#ff8a5c',
     desc:"That dinosaur from the browser game everyone's played while waiting for their Wi-Fi to reconnect? Turns out it wasn't stuck offline by choice - it got a job just to escape that place. You play as the T-Rex, now working as an internet technician, racing to fix people's Wi-Fi before your Offline Meter maxes out. Let it fill, and you're teleported straight back into that cactus-dodging nightmare - three strikes there and you're stuck for good. Built for Pakistan Game Jam 2026 around the theme Dinosaurs, the constraint No Animations (every character and object uses static sprites - all motion comes from position and color changes, never animation clips), and the optional prompt Everyday - an ordinary Wi-Fi repair job, with a very unordinary threat hanging over it.",
     meta:[ {label:'Engine', value:'Unity'}, {label:'Language', value:'C#'}, {label:'Type', value:'Simulation'}, {label:'Jam', value:'Pakistan Game Jam 2026'}, {label:'Duration', value:'87 Hours'}, {label:'Theme', value:'Dinosaurs'} ],
@@ -250,14 +250,14 @@ function renderDetail(key) {
 
   const thumbs = g.images.map((imgKey, i) =>
     '<button type="button" class="' + (i === 0 ? 'active' : '') + '" data-img="' + imgKey + '">' +
-    '<img src="' + GAME_IMG[imgKey] + '" alt=""></button>'
+    '<img src="' + GAME_IMG[imgKey] + '" alt="' + g.title + ' screenshot ' + (i + 1) + '" loading="lazy"></button>'
   ).join('');
 
   let bestiaryHtml = '';
   if (g.bestiary && g.bestiary.length) {
     const chips = g.bestiary.map(b =>
       '<div class="bchip" data-key="' + b.key + '">' +
-      '<img src="' + GAME_IMG[b.key] + '" alt="' + b.label + ' sprite">' +
+      '<img src="' + GAME_IMG[b.key] + '" alt="' + b.label + ' sprite" loading="lazy">' +
       '<span>' + b.label + '</span>' +
       '</div>'
     ).join('');
@@ -311,6 +311,9 @@ function renderDetail(key) {
     '<div class="gd-main-wrap" id="gdMainWrap">' +
     '<div class="corner-brackets"></div>' +
     '<div class="scan-line"></div>' +
+    // This is the main, immediately-visible screenshot shown the instant a
+    // game's detail view opens - intentionally left eager (no
+    // loading="lazy") since it needs to be there right away, not deferred.
     '<img class="gd-main" id="gdMain" src="' + GAME_IMG[g.images[0]] + '" alt="' + g.title + ' screenshot">' +
     '</div>' +
     '<div class="gd-thumbs">' + thumbs + '</div>' +
