@@ -520,6 +520,16 @@
        here. !important is needed to beat the inline left/top on the marker. */
     .biome-marker[data-id="siteseeing"]{ left:76% !important; top:36% !important; }
     .biome-marker[data-id="swamp"]{ left:14% !important; top:78% !important; }
+    /* The subtitle line added under every label (see .biome-subtitle
+       above) ate into clearance between two marker pairs that were
+       already positioned close together at this breakpoint: Forest
+       (top:66% on desktop, unmoved) sits only 12% of viewport height
+       above Swamp here, and Lighthouse (top:52%, unmoved) sits only 16%
+       below Site Seeing above. Nudging Forest up and Lighthouse down
+       restores clearance in both pairs without touching the already
+       fine-tuned left/top values above. */
+    .biome-marker[data-id="forest"]{ top:61% !important; }
+    .biome-marker[data-id="lighthouse"]{ top:57% !important; }
     .biome-marker .icon-wrap svg{ width:46px; height:auto; }
     .compass-wrap{ left:18px; bottom:18px; }
     .compass{ width:34px;height:34px; }
