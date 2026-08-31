@@ -209,7 +209,10 @@
      A fast lane for visitors who won't explore the whole map: a few direct
      links straight into specific projects, visible above the fold. */
   .featured-strip{
-    position:absolute; top:94px; left:36px; z-index:20;
+    /* top was tuned for the old, shorter title block (just the title +
+       subtitle) - the Quick View button added real height above this, so
+       this needs to move down to match rather than sit underneath it. */
+    position:absolute; top:148px; left:36px; z-index:20;
     display:flex; gap:10px; flex-wrap:wrap; max-width:440px;
     opacity:0; animation:hudIn 1s ease forwards 1.3s;
   }

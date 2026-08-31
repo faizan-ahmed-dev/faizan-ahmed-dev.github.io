@@ -490,7 +490,7 @@
     .hud-linear-link{ font-size:10.5px; padding:7px 13px 7px 11px; margin-top:9px; }
     .hud-linear-link small{ display:none; }
     .featured-strip{
-      top:108px; left:18px; right:18px; max-width:none;
+      top:132px; left:18px; right:18px; max-width:none;
       overflow-x:auto; flex-wrap:nowrap; padding-bottom:4px;
       -webkit-overflow-scrolling:touch; scrollbar-width:none;
     }
