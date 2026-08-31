@@ -165,6 +165,7 @@
   }
   @keyframes hudIn{ from{opacity:0; transform:translateY(-6px);} to{opacity:1; transform:translateY(0);} }
   .hud-title{ margin:0; font-family:'Cinzel',serif;font-weight:700; font-size:22px;color:var(--parchment); letter-spacing:.15em; text-shadow:0 2px 10px rgba(0,0,0,.7); }
+  .hud-left{ display:flex; flex-direction:column; align-items:flex-start; }
   .hud-title span{ display:block;font-family:'Share Tech Mono',monospace; font-size:11px;letter-spacing:.2em;color:var(--gold); margin-top:4px;opacity:.85; }
   .hud-player{ text-align:right;font-family:'Share Tech Mono',monospace; font-size:11px;color:var(--parchment);opacity:.85; letter-spacing:.05em; text-shadow:0 2px 8px rgba(0,0,0,.7); }
   .hud-player .badge{ display:inline-block;margin-top:4px;padding:3px 10px; border:1px solid var(--gold);border-radius:20px; color:var(--gold);font-size:10px;letter-spacing:.15em; }
@@ -178,16 +179,27 @@
      (small, muted) so it doesn't compete with the map for attention, but
      it's here, visible without hovering, from the very first screen. */
   .hud-linear-link{
-    display:block; margin-top:10px; text-align:right;
-    font-family:'Spectral', serif; font-size:10.5px; letter-spacing:.02em;
-    color:var(--parchment-dim); text-decoration:none; opacity:.75;
-    transition:opacity .2s ease, color .2s ease;
-    /* .hud (the ancestor) sets pointer-events:none because everything else
-       in it (title, badge, progress dots) is purely decorative/read-only -
-       this is the first actually-clickable thing ever placed inside it, so
-       it needs to explicitly opt back in or it's a link you can see but
-       can't click. */
+    display:inline-flex; align-items:center; gap:7px; margin-top:12px;
+    font-family:'Share Tech Mono', monospace; font-weight:700; font-size:12px; letter-spacing:.04em;
+    color:var(--ink); background:var(--gold-bright); text-decoration:none;
+    padding:8px 16px 8px 13px; border-radius:20px;
+    box-shadow:0 3px 14px rgba(0,0,0,.35);
+    transition:transform .15s ease, box-shadow .15s ease, background .15s ease;
     pointer-events:auto;
+    animation:hudLinearPulse 1.6s ease-out 2.2s 2;
+  }
+  .hud-linear-link small{ font-weight:500; opacity:.75; font-size:10.5px; }
+  .hud-linear-icon{ font-size:13px; }
+  .hud-linear-link:hover, .hud-linear-link:focus-visible{
+    background:#fff; color:var(--ink); transform:translateY(-1px);
+    box-shadow:0 5px 18px rgba(0,0,0,.45);
+  }
+  @keyframes hudLinearPulse{
+    0%, 100%{ box-shadow:0 3px 14px rgba(0,0,0,.35); }
+    50%{ box-shadow:0 3px 14px rgba(0,0,0,.35), 0 0 0 8px rgba(245,215,138,.25); }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .hud-linear-link{ animation:none; }
   }
   .hud-linear-link:hover, .hud-linear-link:focus-visible{
     opacity:1; color:var(--gold-bright); text-decoration:underline;
